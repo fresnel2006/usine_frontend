@@ -1,0 +1,90 @@
+.racine {
+  position: relative;
+}
+
+.champ {
+  position: relative;
+}
+
+.loupe {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  pointer-events: none;
+}
+
+.chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.champ .saisie {
+  padding-left: 40px;
+  padding-right: 40px;
+  text-overflow: ellipsis;
+}
+
+.liste {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  max-height: 260px;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.optionActive {
+  background: var(--primary-50);
+}
+
+.optionDesactivee {
+  color: var(--text-light);
+  cursor: not-allowed;
+}
+
+.coche {
+  display: inline-flex;
+  width: 16px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.texteOption {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail {
+  font-size: 14px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.vide {
+  padding: 12px 10px;
+  color: var(--text-muted);
+}

@@ -1,0 +1,38 @@
+.arbre {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.noeud {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.arbre li:last-child > .noeud {
+  border-bottom: none;
+}
+
+.basculer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+button.basculer:hover {
+  background: var(--primary-50);
+  color: var(--primary);
+}

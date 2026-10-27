@@ -1,0 +1,118 @@
+.fond {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8vh 16px 16px;
+  background: rgba(15, 25, 45, 0.5);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+  animation: apparition 0.15s ease-out;
+}
+
+.fenetre {
+  width: 100%;
+  max-width: 640px;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  max-height: 84vh;
+  animation: montee 0.2s ease-out;
+}
+
+.large {
+  max-width: 840px;
+}
+
+.entete {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 28px 20px;
+}
+
+.titres {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.corps {
+  padding: 4px 28px 28px;
+  overflow-y: auto;
+}
+
+.pied {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 28px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-alt);
+  border-radius: 0 0 20px 20px;
+}
+
+@keyframes apparition {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes montee {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+@media (max-width: 560px) {
+  .entete,
+  .pied {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .corps {
+    padding: 4px 18px 18px;
+  }
+}
+
+/* Panneau latéral : glisse depuis la droite, 480 px, toute la hauteur */
+.fondPanneau {
+  justify-content: flex-end;
+  padding: 0;
+  overflow: hidden;
+}
+
+.panneau {
+  max-width: 480px;
+  height: 100vh;
+  max-height: none;
+  border-radius: 0;
+  animation: glissement 0.22s ease-out;
+}
+
+.panneau .corps {
+  flex: 1;
+}
+
+.panneau .pied {
+  border-radius: 0;
+}
+
+.panneau :global(.form-grid) {
+  grid-template-columns: 1fr;
+}
+
+@keyframes glissement {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}

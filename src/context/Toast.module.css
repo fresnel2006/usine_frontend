@@ -1,0 +1,72 @@
+.zone {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(380px, calc(100vw - 32px));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: 0 4px 14px rgba(20, 30, 45, 0.12);
+  animation: entree 0.15s ease-out;
+}
+
+.toast svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Bordure fine de couleur tout autour (jamais seulement à gauche) */
+.succes {
+  border-color: var(--success);
+}
+
+.erreur {
+  border-color: var(--danger);
+}
+
+.succes svg:first-child {
+  color: var(--success);
+}
+
+.erreur svg:first-child {
+  color: var(--danger);
+}
+
+.message {
+  flex: 1;
+  font-size: 16px;
+}
+
+.fermer {
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 0;
+}
+
+.fermer:hover {
+  color: var(--text);
+}
+
+@keyframes entree {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

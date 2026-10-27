@@ -1,0 +1,182 @@
+.conteneur {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.recherche {
+  position: relative;
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+
+.recherche svg {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  pointer-events: none;
+}
+
+.recherche input {
+  padding-left: 44px;
+  background: var(--surface-alt);
+  box-shadow: none;
+}
+
+.recherche input:focus {
+  background: var(--surface);
+}
+
+.filtres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.filtres :global(.select),
+.filtres :global(.input) {
+  width: auto;
+  min-width: 190px;
+}
+
+.defilement {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 13px 20px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.triable {
+  cursor: pointer;
+  transition: color 0.18s;
+}
+
+.triable:hover {
+  color: var(--primary);
+}
+
+.entete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.iconeTri {
+  opacity: 0.35;
+}
+
+.table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-h);
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr td {
+  transition: background-color 0.15s;
+}
+
+.table tbody tr:hover td {
+  background: #f7faff;
+}
+
+.cliquable {
+  cursor: pointer;
+}
+
+.colActions {
+  width: 1%;
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.vide {
+  padding: 56px 20px !important;
+  text-align: center;
+  color: var(--text-muted) !important;
+}
+
+.pied {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-alt);
+  font-size: 15px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.parPage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 12px;
+  color: var(--text-muted);
+}
+
+.parPage select {
+  width: 84px;
+  height: 38px;
+  font-size: 15px;
+}
+
+.numeroPage {
+  min-width: 96px;
+  text-align: center;
+  color: var(--text-h);
+  font-weight: 500;
+}
+
+.pagination :global(.icon-btn) {
+  background: var(--surface);
+  border-color: var(--border);
+}
