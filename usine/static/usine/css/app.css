@@ -1485,3 +1485,11 @@ dialog.fenetre::backdrop {
   font-size: 12px;
   font-weight: 600;
 }
+
+.comptes-demo th {
+  padding: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+}

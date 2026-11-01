@@ -60,6 +60,7 @@
         <div class="panel-header"><h3>Comptes de démonstration</h3></div>
         <div class="panel-body">
           <table>
+            <thead><tr><th>Identifiant</th><th>Mot de passe</th><th>Rôle</th></tr></thead>
             {% for login, mdp, role in comptes_demo %}
               <tr><td class="mono">{{ login }}</td><td class="mono">{{ mdp }}</td><td class="muted">{{ role }}</td></tr>
             {% endfor %}
