@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from usine import models as m
-from usine.forms import IncidentForm, TypeIncidentForm
+from usine.forms import FiltreIncidentsForm, IncidentForm, TypeIncidentForm
 from usine.permissions import droit_requis
 from usine.views.outils import supprimer, traiter_formulaire
 
@@ -36,8 +36,13 @@ def statistiques():
 
 @droit_requis("incidents")
 def liste(request):
-    incidents = m.Incident.objects.select_related("type_incident", "lot__produit", "lot__ligne__atelier")
-    return render(request, "usine/incidents/liste.html", {"incidents": incidents, **statistiques()})
+    filtres = FiltreIncidentsForm(request.GET)
+    incidents = filtres.filtrer(
+        m.Incident.objects.select_related("type_incident", "lot__produit", "lot__ligne__atelier")
+    ).order_by("-num_incident")
+    return render(
+        request, "usine/incidents/liste.html", {"incidents": incidents, "filtres": filtres, **statistiques()}
+    )
 
 
 @droit_requis("incidents")

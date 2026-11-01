@@ -3,4 +3,17 @@
     {% icone "search" 16 %}
     <input type="search" class="input" data-recherche placeholder="{{ placeholder|default:'Rechercher...' }}" aria-label="Rechercher dans la liste">
   </label>
+  {% if filtres %}
+    <form method="get" class="filtres" data-filtres>
+      {% for champ in filtres %}
+        {% if champ.field.widget.input_type == "checkbox" %}
+          <label class="filtre-case">{{ champ }} {{ champ.label }}</label>
+        {% else %}
+          {{ champ }}
+        {% endif %}
+      {% endfor %}
+      <noscript><button type="submit" class="btn btn-secondary btn-sm">Filtrer</button></noscript>
+      {% if filtres.actif %}<a href="{{ request.path }}" class="btn btn-ghost btn-sm">{% icone "x" 14 %}Effacer les filtres</a>{% endif %}
+    </form>
+  {% endif %}
 </div>

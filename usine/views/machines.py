@@ -3,17 +3,18 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from usine import models as m
-from usine.forms import MachineForm
+from usine.forms import FiltreMachinesForm, MachineForm
 from usine.permissions import droit_requis
 from usine.views.outils import supprimer, traiter_formulaire
 
 
 @droit_requis("machines")
 def liste(request):
-    machines = m.Machine.objects.select_related("ligne__atelier").annotate(
+    filtres = FiltreMachinesForm(request.GET)
+    machines = filtres.filtrer(m.Machine.objects.select_related("ligne__atelier")).annotate(
         nb_maintenances=Count("maintenances"), derniere=Max("maintenances__date_heure_debut")
     )
-    return render(request, "usine/machines/liste.html", {"machines": machines})
+    return render(request, "usine/machines/liste.html", {"machines": machines, "filtres": filtres})
 
 
 @droit_requis("machines")

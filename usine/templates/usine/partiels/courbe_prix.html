@@ -1,0 +1,40 @@
+<section class="panel">
+  <div class="panel-header">
+    <h2>Évolution du prix d'achat</h2>
+    <span class="muted small">Prix unitaire en FCFA, tous fournisseurs</span>
+  </div>
+  <div class="panel-body">
+    {% if courbe %}
+      <figure class="courbe">
+        <svg viewBox="0 0 {{ courbe.largeur }} {{ courbe.hauteur }}" role="img"
+             aria-label="Évolution du prix d'achat unitaire de {{ piece.libelle }} entre le {{ courbe.premiere_date|date_fr }} et le {{ courbe.derniere_date|date_fr }}">
+          {% for g in courbe.graduations %}
+            <line x1="{{ courbe.gauche }}" x2="{{ courbe.droite }}" y1="{{ g.y }}" y2="{{ g.y }}" class="courbe-grille"/>
+            <text x="{{ courbe.gauche|add:'-8' }}" y="{{ g.y }}" class="courbe-axe" text-anchor="end" dominant-baseline="middle">{{ g.valeur|nombre }}</text>
+          {% endfor %}
+          <line x1="{{ courbe.gauche }}" x2="{{ courbe.droite }}" y1="{{ courbe.base }}" y2="{{ courbe.base }}" class="courbe-base"/>
+          <text x="{{ courbe.gauche }}" y="{{ courbe.hauteur|add:'-8' }}" class="courbe-axe">{{ courbe.premiere_date|date_fr }}</text>
+          {% if courbe.plusieurs_dates %}
+            <text x="{{ courbe.droite }}" y="{{ courbe.hauteur|add:'-8' }}" class="courbe-axe" text-anchor="end">{{ courbe.derniere_date|date_fr }}</text>
+          {% endif %}
+          {% if courbe.points|length > 1 %}
+            <polyline points="{{ courbe.trace }}" class="courbe-ligne"/>
+          {% endif %}
+          {% for p in courbe.points %}
+            <g class="courbe-point" tabindex="0">
+              <title>{{ p.date|date_fr }} - {{ p.fournisseur }} : {{ p.prix|fcfa }} ({{ p.quantite }} achetée(s))</title>
+              <circle cx="{{ p.x }}" cy="{{ p.y }}" r="14" class="courbe-cible"/>
+              <circle cx="{{ p.x }}" cy="{{ p.y }}" r="4.5" class="courbe-marque"/>
+            </g>
+          {% endfor %}
+          {% with dernier=courbe.points|last %}
+            <text x="{{ courbe.etiquette_x }}" y="{{ courbe.etiquette_y }}" class="courbe-etiquette" text-anchor="{% if courbe.plusieurs_dates %}end{% else %}middle{% endif %}">{{ dernier.prix|fcfa }}</text>
+          {% endwith %}
+        </svg>
+        <figcaption class="small muted">Survolez un point pour voir la date, le fournisseur et le prix. Le détail figure dans le tableau des achats ci-dessous.</figcaption>
+      </figure>
+    {% else %}
+      <p class="muted">Aucun achat enregistré : la courbe s'affichera après le premier achat.</p>
+    {% endif %}
+  </div>
+</section>

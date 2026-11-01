@@ -858,3 +858,92 @@ class FiltreLotsForm(FormulaireBase):
             lots = lots.filter(produit=d["produit"])
         return lots
 
+
+
+# ---------------------------------------------------------------------------
+# Filtres des listes (requêtes GET, envoyés automatiquement par app.js)
+# ---------------------------------------------------------------------------
+class FiltreBase(FormulaireBase):
+    """Chaque champ rempli ajoute un filtre ; CORRESPONDANCES relie le champ à la recherche Django."""
+
+    CORRESPONDANCES: dict = {}
+
+    def __init__(self, donnees=None, *args, **kwargs):
+        super().__init__(donnees or None, *args, **kwargs)
+        for nom, champ in self.fields.items():
+            champ.widget.attrs.setdefault("aria-label", champ.label)
+
+    @property
+    def actif(self):
+        return self.is_bound and any(self.data.get(nom) for nom in self.fields)
+
+    def filtrer(self, queryset):
+        if not self.is_valid():
+            return queryset
+        for nom, recherche in self.CORRESPONDANCES.items():
+            valeur = self.cleaned_data.get(nom)
+            if valeur not in (None, "", False):
+                queryset = recherche(queryset, valeur) if callable(recherche) else queryset.filter(**{recherche: valeur})
+        return queryset.distinct()
+
+
+def choix_filtre(libelle, queryset, vide):
+    return forms.ModelChoiceField(label=libelle, queryset=queryset, required=False, empty_label=vide)
+
+
+def date_filtre(libelle):
+    return forms.DateField(label=libelle, required=False, widget=forms.DateInput(attrs={"type": "date"}))
+
+
+class FiltreLignesForm(FiltreBase):
+    atelier = choix_filtre("Atelier", m.Atelier.objects.all(), "Tous les ateliers")
+    CORRESPONDANCES = {"atelier": "atelier"}
+
+
+class FiltreOperateursForm(FiltreBase):
+    equipe = choix_filtre("Équipe", m.Equipe.objects.all(), "Toutes les équipes")
+    CORRESPONDANCES = {"equipe": "equipe"}
+
+
+class FiltreIncidentsForm(FiltreBase):
+    type_incident = choix_filtre("Type", m.TypeIncident.objects.all(), "Tous les types")
+    atelier = choix_filtre("Atelier", m.Atelier.objects.all(), "Tous les ateliers")
+    lot = forms.IntegerField(
+        label="N° de lot", required=False, min_value=1, widget=forms.NumberInput(attrs={"placeholder": "N° de lot"})
+    )
+    CORRESPONDANCES = {"type_incident": "type_incident", "atelier": "lot__ligne__atelier", "lot": "lot_id"}
+
+
+class FiltreMachinesForm(FiltreBase):
+    ligne = choix_filtre("Ligne", m.LigneProduction.objects.all(), "Toutes les lignes")
+    CORRESPONDANCES = {"ligne": "ligne"}
+
+
+class FiltreMaintenancesForm(FiltreBase):
+    machine = choix_filtre("Machine", m.Machine.objects.all(), "Toutes les machines")
+    du = date_filtre("Du")
+    au = date_filtre("Au")
+    operateur = choix_filtre("Opérateur", m.Operateur.objects.all(), "Tous les opérateurs")
+    CORRESPONDANCES = {
+        "machine": "machine",
+        "du": "date_heure_debut__date__gte",
+        "au": "date_heure_debut__date__lte",
+        "operateur": "interventions__operateur",
+    }
+
+
+class FiltrePiecesForm(FiltreBase):
+    stock_faible = forms.BooleanField(label="Stock faible seulement", required=False)
+
+    def __init__(self, *args, seuil, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["stock_faible"].label = f"Stock faible seulement ({seuil} ou moins)"
+        self.CORRESPONDANCES = {"stock_faible": lambda qs, _: qs.filter(quantite_stock__lte=seuil)}
+
+
+class FiltreUtilisateursForm(FiltreBase):
+    role = forms.ChoiceField(label="Rôle", required=False, choices=[("", "Tous les rôles")] + m.ROLES)
+    statut = forms.ChoiceField(
+        label="Statut", required=False, choices=[("", "Tous les statuts"), ("actif", "Actifs"), ("inactif", "Désactivés")]
+    )
+    CORRESPONDANCES = {"role": "role", "statut": lambda qs, v: qs.filter(actif=(v == "actif"))}

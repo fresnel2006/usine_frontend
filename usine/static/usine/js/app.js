@@ -255,7 +255,7 @@
   /* ---------------------------------------------------------------- */
   function initFiltres() {
     document.querySelectorAll('form[data-filtres]').forEach((formulaire) => {
-      formulaire.querySelectorAll('select, input[type=date]').forEach((champ) =>
+      formulaire.querySelectorAll('select, input[type=date], input[type=checkbox], input[type=number]').forEach((champ) =>
         champ.addEventListener('change', () => formulaire.submit())
       )
     })

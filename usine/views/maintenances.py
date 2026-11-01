@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from usine import models as m
-from usine.forms import ConsommationForm, MaintenanceForm
+from usine.forms import ConsommationForm, FiltreMaintenancesForm, MaintenanceForm
 from usine.permissions import (
     MESSAGE_403,
     droit_requis,
@@ -28,8 +28,11 @@ def _avec_details(queryset):
 
 @droit_requis("maintenances")
 def liste(request):
-    maintenances = _avec_details(m.Maintenance.objects.all())
-    return render(request, "usine/maintenances/liste.html", {"maintenances": maintenances})
+    filtres = FiltreMaintenancesForm(request.GET)
+    maintenances = _avec_details(filtres.filtrer(m.Maintenance.objects.all())).order_by(
+        "-date_heure_debut", "-num_maintenance"
+    )
+    return render(request, "usine/maintenances/liste.html", {"maintenances": maintenances, "filtres": filtres})
 
 
 @droit_requis("maintenances")

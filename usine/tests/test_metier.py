@@ -364,3 +364,58 @@ class LogiqueDeLEnonce(TestUsine):
         self.connecter(COLLAB)
         self.client.post(reverse("equipes_modifier", args=[2]), {"libelle": "Équipe de l'après-midi", "responsable": "OP003"})
         self.assertEqual(m.Equipe.objects.get(pk=2).responsable_id, "OP003")
+
+
+class FonctionsDuRapport(TestUsine):
+    """Fonctions montrées dans les captures du rapport (partie VI)."""
+
+    def setUp(self):
+        self.connecter(ADMIN)
+
+    def test_filtres_des_incidents(self):
+        page = self.client.get(reverse("incidents"), {"type_incident": "PAN"})
+        self.assertEqual([i.type_incident_id for i in page.context["incidents"]], ["PAN", "PAN"])
+        page = self.client.get(reverse("incidents"), {"atelier": 10})
+        self.assertEqual({i.lot_id for i in page.context["incidents"]}, {5001, 5003})
+        page = self.client.get(reverse("incidents"), {"lot": 5002})
+        self.assertEqual(len(page.context["incidents"]), 2)
+
+    def test_filtres_des_maintenances(self):
+        page = self.client.get(reverse("maintenances"), {"operateur": "OP005"})
+        self.assertEqual({mt.pk for mt in page.context["maintenances"]}, {1, 2})
+        page = self.client.get(reverse("maintenances"), {"machine": 4})
+        self.assertEqual([mt.pk for mt in page.context["maintenances"]], [3])
+        page = self.client.get(reverse("maintenances"), {"du": "2026-10-20", "au": "2026-10-21"})
+        self.assertEqual([mt.pk for mt in page.context["maintenances"]], [2])
+
+    def test_stock_faible_seulement(self):
+        page = self.client.get(reverse("pieces"), {"stock_faible": "on"})
+        self.assertEqual({p.pk for p in page.context["pieces"]}, {"PCE-MOTR", "PCE-KITP"})
+
+    def test_autres_filtres(self):
+        self.assertEqual(len(self.client.get(reverse("lignes"), {"atelier": 10}).context["lignes"]), 2)
+        self.assertEqual(len(self.client.get(reverse("machines"), {"ligne": 201}).context["machines"]), 2)
+        self.assertEqual(len(self.client.get(reverse("operateurs"), {"equipe": 3}).context["operateurs"]), 2)
+        comptes = self.client.get(reverse("utilisateurs"), {"role": "OPERATEUR"}).context["comptes"]
+        self.assertEqual([c.login for c in comptes], ["knguessan"])
+
+    def test_anciennete(self):
+        from datetime import date
+
+        from usine.templatetags.usine import anciennete
+
+        self.assertEqual(anciennete(date(2020, 6, 15), date(2026, 10, 27)), "6 ans 4 mois")
+        self.assertEqual(anciennete(date(2026, 10, 1), date(2026, 10, 27)), "0 mois")
+        self.assertContains(self.client.get(reverse("operateurs")), "Ancienneté")
+
+    def test_courbe_du_prix_d_achat(self):
+        url = reverse("pieces_detail", args=["PCE-MOTR"]) + "?onglet=achats"
+        page = self.client.get(url)
+        courbe = page.context["courbe"]
+        self.assertEqual([str(p["prix"]) for p in courbe["points"]], ["178000.0", "182000.0"])
+        self.assertContains(page, "<polyline")
+        self.assertContains(page, "Évolution du prix d'achat")
+        self.assertNotContains(page, 'cy="186,0"')
+        self.assertContains(page, 'cy="186.0"')
+        page = self.client.get(reverse("pieces_detail", args=["PCE-ARBR"]) + "?onglet=achats")
+        self.assertIsNone(page.context["courbe"])

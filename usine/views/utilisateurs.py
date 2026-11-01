@@ -4,15 +4,16 @@ from django.views.decorators.http import require_POST
 
 from usine import models as m
 from usine.auth import hacher_mot_de_passe
-from usine.forms import ReinitialiserMotDePasseForm, UtilisateurForm, admins_actifs_autres_que
+from usine.forms import FiltreUtilisateursForm, ReinitialiserMotDePasseForm, UtilisateurForm, admins_actifs_autres_que
 from usine.permissions import droit_requis
 from usine.views.outils import afficher_formulaire, echec, succes, supprimer, traiter_formulaire
 
 
 @droit_requis("utilisateurs")
 def liste(request):
-    comptes = m.Utilisateur.objects.select_related("operateur")
-    return render(request, "usine/utilisateurs/liste.html", {"comptes": comptes})
+    filtres = FiltreUtilisateursForm(request.GET)
+    comptes = filtres.filtrer(m.Utilisateur.objects.select_related("operateur")).order_by("login")
+    return render(request, "usine/utilisateurs/liste.html", {"comptes": comptes, "filtres": filtres})
 
 
 @droit_requis("utilisateurs", "creer")

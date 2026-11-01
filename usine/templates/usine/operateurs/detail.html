@@ -23,6 +23,7 @@
         <dt>Nom</dt><dd>{{ operateur.nom }}</dd>
         <dt>Prénom</dt><dd>{{ operateur.prenom }}</dd>
         <dt>Date d'entrée</dt><dd>{{ operateur.date_entree|date_fr }}</dd>
+        <dt>Ancienneté</dt><dd>{{ operateur.date_entree|anciennete }}</dd>
         <dt>Équipe</dt><dd><a href="{% url 'equipes_detail' operateur.equipe_id %}">{{ operateur.equipe.libelle }}</a>{% if operateur.equipe.responsable %} <span class="muted">(responsable : {{ operateur.equipe.responsable.nom_complet }})</span>{% endif %}</dd>
         {% if operateur.atelier_dirige %}<dt>Responsable de l'atelier</dt><dd><a href="{% url 'ateliers_detail' operateur.atelier_dirige.num_atelier %}">{{ operateur.atelier_dirige.libelle }}</a></dd>{% endif %}
         {% if operateur.equipe_dirigee %}<dt>Responsable de l'équipe</dt><dd>{{ operateur.equipe_dirigee.libelle }}</dd>{% endif %}

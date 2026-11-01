@@ -87,6 +87,32 @@ def duree(minutes):
 
 
 @register.filter
+def anciennete_mois(date_entree, reference=None):
+    """Nombre de mois complets depuis la date d'entrée (pour le tri)."""
+    if not date_entree:
+        return 0
+    fin = reference or date.today()
+    mois = (fin.year - date_entree.year) * 12 + fin.month - date_entree.month
+    if fin.day < date_entree.day:
+        mois -= 1
+    return max(mois, 0)
+
+
+@register.filter
+def anciennete(date_entree, reference=None):
+    """date(2020, 6, 15) -> « 6 ans 4 mois » au 01/11/2026."""
+    if not date_entree:
+        return "-"
+    annees, mois = divmod(anciennete_mois(date_entree, reference), 12)
+    morceaux = []
+    if annees:
+        morceaux.append(f"{annees} an{'s' if annees > 1 else ''}")
+    if mois or not annees:
+        morceaux.append(f"{mois} mois")
+    return " ".join(morceaux)
+
+
+@register.filter
 def libelle_role(role):
     return LIBELLES_ROLES.get(role, role)
 

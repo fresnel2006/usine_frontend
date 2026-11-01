@@ -5,15 +5,20 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from usine import models as m
-from usine.forms import OperateurForm
+from usine.forms import FiltreOperateursForm, OperateurForm
 from usine.permissions import droit_requis
 from usine.views.outils import supprimer, traiter_formulaire
 
 
 @droit_requis("operateurs")
 def liste(request):
-    operateurs = m.Operateur.objects.select_related("equipe", "atelier_dirige", "equipe_dirigee")
-    return render(request, "usine/operateurs/liste.html", {"operateurs": operateurs})
+    filtres = FiltreOperateursForm(request.GET)
+    operateurs = filtres.filtrer(
+        m.Operateur.objects.select_related("equipe", "atelier_dirige", "equipe_dirigee")
+    ).order_by("nom", "prenom")
+    return render(
+        request, "usine/operateurs/liste.html", {"operateurs": operateurs, "filtres": filtres, "aujourdhui": date.today()}
+    )
 
 
 @droit_requis("operateurs")

@@ -8,7 +8,8 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from usine import models as m
-from usine.forms import AchatForm, FormulaireBase, NomenclatureForm, PieceForm
+from usine.graphiques import courbe_prix
+from usine.forms import AchatForm, FiltrePiecesForm, FormulaireBase, NomenclatureForm, PieceForm
 from usine.permissions import droit_requis
 from usine.views.outils import afficher_formulaire, confirmer, echec, succes, supprimer, traiter_formulaire
 
@@ -29,11 +30,12 @@ def arbre_nomenclature(piece, multiplicateur=1, niveau=0, chemin=None):
 
 @droit_requis("pieces")
 def liste(request):
-    pieces = m.Piece.objects.annotate(
+    filtres = FiltrePiecesForm(request.GET, seuil=settings.SEUIL_STOCK_FAIBLE)
+    pieces = filtres.filtrer(m.Piece.objects.all()).annotate(
         nb_composants=Count("composants__composant", distinct=True), dernier_achat=Max("achats__date_achat")
     )
     return render(
-        request, "usine/pieces/liste.html", {"pieces": pieces, "seuil": settings.SEUIL_STOCK_FAIBLE}
+        request, "usine/pieces/liste.html", {"pieces": pieces, "filtres": filtres, "seuil": settings.SEUIL_STOCK_FAIBLE}
     )
 
 
@@ -62,6 +64,7 @@ def detail(request, ref):
             "utilisee_dans": piece.entre_dans.select_related("composee"),
             "achats": achats,
             "prix_par_fournisseur": prix_par_fournisseur,
+            "courbe": courbe_prix(piece.achats.select_related("fournisseur").order_by("date_achat")),
             "consommations": piece.consommations.select_related("maintenance__machine").order_by(
                 "-maintenance__date_heure_debut"
             ),

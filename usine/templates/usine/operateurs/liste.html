@@ -22,6 +22,7 @@
           <th data-tri="texte">Nom{% include "usine/partiels/tri.html" %}</th>
           <th data-tri="texte">Équipe{% include "usine/partiels/tri.html" %}</th>
           <th data-tri="texte">Date d'entrée{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre">Ancienneté{% include "usine/partiels/tri.html" %}</th>
           <th>Responsabilité</th>
           <th class="col-actions"><span class="sr-only">Actions</span></th>
         </tr>
@@ -33,6 +34,7 @@
             <td><a href="{% url 'operateurs_detail' o.matricule %}">{{ o.nom_complet }}</a></td>
             <td><a href="{% url 'equipes_detail' o.equipe_id %}">{{ o.equipe.libelle }}</a></td>
             <td data-valeur="{{ o.date_entree|date:'Y-m-d' }}">{{ o.date_entree|date_fr }}</td>
+            <td data-valeur="{{ o.date_entree|anciennete_mois:aujourdhui }}">{{ o.date_entree|anciennete:aujourdhui }}</td>
             <td>
               {% if o.atelier_dirige %}<span class="badge badge-primary">Resp. {{ o.atelier_dirige.libelle }}</span>{% endif %}
               {% if o.equipe_dirigee %}<span class="badge badge-primary-strong">Resp. {{ o.equipe_dirigee.libelle }}</span>{% endif %}
@@ -44,7 +46,7 @@
             </div></td>
           </tr>
         {% endfor %}
-        <tr class="ligne-vide"><td colspan="6" class="vide">Aucun opérateur.</td></tr>
+        <tr class="ligne-vide"><td colspan="7" class="vide">Aucun opérateur.</td></tr>
       </tbody>
     </table>
   </div>
