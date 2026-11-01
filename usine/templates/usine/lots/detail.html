@@ -1,0 +1,61 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Lot {{ lot.num_lot }}{% endblock %}
+{% block contenu %}
+{% peut "lots" "modifier" as droit_modifier %}{% peut "lots" "supprimer" as droit_supprimer %}{% peut "incidents" "creer" as droit_incident %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'lots' %}" class="retour">{% icone "arrow-left" 14 %}Lots de production</a>
+    <h1>Lot {{ lot.num_lot }}</h1>
+    <p class="sous-titre">{{ lot.produit.designation }} - {{ lot.date_production|date_fr }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_incident %}<a href="{% url 'incidents_creer' %}?lot={{ lot.num_lot }}" class="btn btn-secondary" data-modal>{% icone "triangle-alert" 16 %}Déclarer un incident</a>{% endif %}
+    {% if droit_modifier %}<a href="{% url 'lots_modifier' lot.num_lot %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'lots_supprimer' lot.num_lot %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-header"><h2>Informations</h2></div>
+    <div class="panel-body">
+      <dl class="details">
+        <dt>Numéro</dt><dd class="mono">{{ lot.num_lot }}</dd>
+        <dt>Date de production</dt><dd>{{ lot.date_production|date_fr }}</dd>
+        <dt>Ligne</dt><dd><a href="{% url 'lignes_detail' lot.ligne_id %}">Ligne {{ lot.ligne_id }}</a> - {{ lot.ligne.atelier.libelle }}</dd>
+        <dt>Produit</dt><dd><a href="{% url 'produits_detail' lot.produit_id %}">{{ lot.produit.designation }}</a> <span class="muted">({{ lot.produit_id }})</span></dd>
+        <dt>Temps d'arrêt total</dt><dd>{{ total_arret|duree }}</dd>
+      </dl>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Opérateurs ayant oeuvré sur le lot</h2></div>
+    <ul class="liste-simple">
+      {% for p in lot.participations.all %}
+        <li><a href="{% url 'operateurs_detail' p.operateur_id %}">{{ p.operateur.nom_complet }}</a><span class="mono muted">{{ p.operateur_id }}</span></li>
+      {% empty %}
+        <li class="muted">Aucun opérateur.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+<section class="panel marge-haut">
+  <div class="panel-header"><h2>Incidents</h2><span class="badge">{{ incidents|length }}</span></div>
+  <div class="defilement">
+    <table class="table">
+      <thead><tr><th>N°</th><th>Type</th><th class="num">Temps d'arrêt</th></tr></thead>
+      <tbody>
+        {% for incident in incidents %}
+          <tr>
+            <td><a href="{% url 'incidents_detail' incident.num_incident %}">{{ incident.num_incident }}</a></td>
+            <td>{{ incident.type_incident.libelle }}</td>
+            <td class="num">{{ incident.temps_arret|duree }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3" class="vide">Aucun incident sur ce lot.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "usine/base.html" %}
+{% block titre_onglet %}Page introuvable{% endblock %}
+{% block corps %}
+<div class="page-seule">
+  <div class="page-message">
+    {% icone "file-question-mark" 36 %}
+    <h1>Page introuvable</h1>
+    <p class="muted">L'adresse demandée n'existe pas ou l'élément a été supprimé.</p>
+    <a href="{% url 'accueil' %}" class="btn btn-primary">{% icone "arrow-left" 16 %}Retour</a>
+  </div>
+</div>
+{% endblock %}

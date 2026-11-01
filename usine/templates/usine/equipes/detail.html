@@ -1,0 +1,45 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}{{ equipe.libelle }}{% endblock %}
+{% block contenu %}
+{% peut "equipes" "modifier" as droit_modifier %}{% peut "equipes" "supprimer" as droit_supprimer %}{% peut "operateurs" "creer" as droit_operateur %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'equipes' %}" class="retour">{% icone "arrow-left" 14 %}Équipes</a>
+    <h1>{{ equipe.libelle }}</h1>
+    <p class="sous-titre">Équipe n° {{ equipe.num_equipe }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_operateur %}<a href="{% url 'operateurs_creer' %}?equipe={{ equipe.num_equipe }}" class="btn btn-secondary" data-modal>{% icone "user-plus" 16 %}Ajouter un opérateur</a>{% endif %}
+    {% if droit_modifier %}<a href="{% url 'equipes_modifier' equipe.num_equipe %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'equipes_supprimer' equipe.num_equipe %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-header"><h2>Informations</h2></div>
+    <div class="panel-body">
+      <dl class="details">
+        <dt>Numéro</dt><dd class="mono">{{ equipe.num_equipe }}</dd>
+        <dt>Libellé</dt><dd>{{ equipe.libelle }}</dd>
+        <dt>Collaborateur responsable</dt>
+        <dd>{% if equipe.responsable %}<a href="{% url 'operateurs_detail' equipe.responsable_id %}">{{ equipe.responsable.nom_complet }}</a>{% else %}<span class="muted">Non désigné</span>{% endif %}</dd>
+        <dt>Effectif</dt><dd>{{ membres|length }} opérateur(s)</dd>
+      </dl>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Membres</h2></div>
+    <ul class="liste-simple">
+      {% for o in membres %}
+        <li>
+          <a href="{% url 'operateurs_detail' o.matricule %}">{{ o.nom_complet }}</a>
+          <span>{% if o.matricule == equipe.responsable_id %}<span class="badge badge-primary">Responsable</span> {% endif %}<span class="mono muted">{{ o.matricule }}</span></span>
+        </li>
+      {% empty %}
+        <li class="muted">Aucun opérateur dans cette équipe.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

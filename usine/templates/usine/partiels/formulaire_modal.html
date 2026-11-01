@@ -1,0 +1,14 @@
+<form method="post" action="{{ action }}" class="fenetre-contenu" data-large="{% if large %}1{% else %}0{% endif %}" novalidate>
+  {% csrf_token %}
+  <div class="fenetre-entete">
+    <h2>{{ titre }}</h2>
+    <button type="button" class="icon-btn" data-fermer aria-label="Fermer">{% icone "x" 18 %}</button>
+  </div>
+  <div class="fenetre-corps">
+    {% include "usine/partiels/formulaire_corps.html" with large=False %}
+  </div>
+  <div class="fenetre-pied">
+    <button type="button" class="btn btn-secondary" data-fermer>Annuler</button>
+    <button type="submit" class="btn btn-primary">{% icone "check" 16 %}{{ bouton }}</button>
+  </div>
+</form>

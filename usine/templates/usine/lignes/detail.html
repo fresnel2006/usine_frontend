@@ -1,0 +1,69 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Ligne {{ ligne.num_ligne }}{% endblock %}
+{% block contenu %}
+{% peut "lignes" "modifier" as droit_modifier %}{% peut "lignes" "supprimer" as droit_supprimer %}{% peut "lots" "creer" as droit_lot %}{% peut "machines" "creer" as droit_machine %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'lignes' %}" class="retour">{% icone "arrow-left" 14 %}Lignes de production</a>
+    <h1>Ligne {{ ligne.num_ligne }}</h1>
+    <p class="sous-titre">{{ ligne.atelier.libelle }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_lot %}<a href="{% url 'lots_creer' %}?ligne={{ ligne.num_ligne }}" class="btn btn-secondary" data-modal>{% icone "plus" 16 %}Nouveau lot</a>{% endif %}
+    {% if droit_machine %}<a href="{% url 'machines_creer' %}?ligne={{ ligne.num_ligne }}" class="btn btn-secondary" data-modal>{% icone "plus" 16 %}Nouvelle machine</a>{% endif %}
+    {% if droit_modifier %}<a href="{% url 'lignes_modifier' ligne.num_ligne %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'lignes_supprimer' ligne.num_ligne %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="stack">
+  <section class="panel">
+    <div class="panel-header"><h2>Informations</h2></div>
+    <div class="panel-body">
+      <dl class="details">
+        <dt>Numéro</dt><dd class="mono">{{ ligne.num_ligne }}</dd>
+        <dt>Atelier</dt><dd><a href="{% url 'ateliers_detail' ligne.atelier_id %}">{{ ligne.atelier.libelle }}</a></dd>
+        <dt>Responsable de l'atelier</dt><dd>{{ ligne.atelier.responsable.nom_complet }}</dd>
+        <dt>Opérateurs nécessaires</dt><dd>{{ ligne.nb_operateurs_necessaires }}</dd>
+      </dl>
+    </div>
+  </section>
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-header"><h2>Machines</h2><span class="badge">{{ machines|length }}</span></div>
+      <div class="defilement">
+        <table class="table">
+          <thead><tr><th>N°</th><th>Désignation</th></tr></thead>
+          <tbody>
+            {% for machine in machines %}
+              <tr><td class="mono">{{ machine.num_machine }}</td><td><a href="{% url 'machines_detail' machine.num_machine %}">{{ machine.designation }}</a></td></tr>
+            {% empty %}
+              <tr><td colspan="2" class="vide">Aucune machine sur cette ligne.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><h2>Lots de production</h2><span class="badge">{{ lots|length }}</span></div>
+      <div class="defilement">
+        <table class="table">
+          <thead><tr><th>Lot</th><th>Date</th><th>Produit</th><th class="num">Opérateurs</th></tr></thead>
+          <tbody>
+            {% for lot in lots %}
+              <tr>
+                <td><a href="{% url 'lots_detail' lot.num_lot %}">{{ lot.num_lot }}</a></td>
+                <td>{{ lot.date_production|date_fr }}</td>
+                <td>{{ lot.produit.designation }}</td>
+                <td class="num">{{ lot.nb_operateurs }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="vide">Aucun lot produit sur cette ligne.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

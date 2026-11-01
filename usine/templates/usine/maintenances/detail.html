@@ -1,0 +1,68 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Maintenance {{ maintenance.num_maintenance }}{% endblock %}
+{% block contenu %}
+{% peut "maintenances" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'maintenances' %}" class="retour">{% icone "arrow-left" 14 %}Maintenances</a>
+    <h1>Maintenance {{ maintenance.num_maintenance }}</h1>
+    <p class="sous-titre">{{ maintenance.machine.designation }} - {{ maintenance.date_heure_debut|date_heure_fr }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_modifier %}<a href="{% url 'maintenances_modifier' maintenance.num_maintenance %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'maintenances_supprimer' maintenance.num_maintenance %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}
+  <div class="alert alert-info lecture-seule" title="Lecture seule">
+    {% icone "lock" 16 %}<div><strong>Lecture seule.</strong>
+    {% if utilisateur.role == "OPERATEUR" %}Seuls les opérateurs ayant effectué cette maintenance peuvent la modifier.{% else %}Votre rôle permet de consulter cette maintenance, mais pas de la modifier.{% endif %}</div>
+  </div>
+{% endif %}
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-header"><h2>Informations</h2></div>
+    <div class="panel-body">
+      <dl class="details">
+        <dt>Numéro</dt><dd class="mono">{{ maintenance.num_maintenance }}</dd>
+        <dt>Machine</dt><dd><a href="{% url 'machines_detail' maintenance.machine_id %}">{{ maintenance.machine.designation }}</a></dd>
+        <dt>Ligne / atelier</dt><dd>Ligne {{ maintenance.machine.ligne_id }} - {{ maintenance.machine.ligne.atelier.libelle }}</dd>
+        <dt>Début</dt><dd>{{ maintenance.date_heure_debut|date_heure_fr }}</dd>
+        <dt>Durée</dt><dd>{{ maintenance.duree|duree }}</dd>
+      </dl>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Opérateurs</h2></div>
+    <ul class="liste-simple">
+      {% for e in maintenance.interventions.all %}
+        <li><a href="{% url 'operateurs_detail' e.operateur_id %}">{{ e.operateur.nom_complet }}</a><span class="mono muted">{{ e.operateur_id }}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+<section class="panel marge-haut">
+  <div class="panel-header">
+    <h2>Pièces consommées</h2>
+    {% if droit_consommer %}<a href="{% url 'maintenances_ajouter_piece' maintenance.num_maintenance %}" class="btn btn-secondary btn-sm" data-modal>{% icone "plus" 14 %}Noter une pièce</a>{% endif %}
+  </div>
+  <div class="defilement">
+    <table class="table">
+      <thead><tr><th>Référence</th><th>Pièce</th><th class="num">Quantité</th><th class="num">Valeur HT</th><th class="col-actions"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+        {% for c in maintenance.consommations.all %}
+          <tr>
+            <td class="mono"><a href="{% url 'pieces_detail' c.piece_id %}">{{ c.piece_id }}</a></td>
+            <td>{{ c.piece.libelle }}</td>
+            <td class="num">{{ c.quantite }}</td>
+            <td class="num">{{ c.piece.prix_unitaire_ht|fois:c.quantite|fcfa }}</td>
+            <td class="col-actions">{% if droit_retirer_piece %}<a href="{% url 'maintenances_retirer_piece' maintenance.num_maintenance c.piece_id %}" class="icon-btn danger" data-modal title="Retirer">{% icone "trash-2" 16 %}</a>{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="vide">Aucune pièce consommée lors de cette maintenance.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}{{ atelier.libelle }}{% endblock %}
+{% block contenu %}
+{% peut "ateliers" "modifier" as droit_modifier %}{% peut "ateliers" "supprimer" as droit_supprimer %}{% peut "lignes" "creer" as droit_ligne %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'ateliers' %}" class="retour">{% icone "arrow-left" 14 %}Ateliers</a>
+    <h1>{{ atelier.libelle }}</h1>
+    <p class="sous-titre">Atelier n° {{ atelier.num_atelier }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_ligne %}<a href="{% url 'lignes_creer' %}?atelier={{ atelier.num_atelier }}" class="btn btn-secondary" data-modal>{% icone "plus" 16 %}Nouvelle ligne</a>{% endif %}
+    {% if droit_modifier %}<a href="{% url 'ateliers_modifier' atelier.num_atelier %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'ateliers_supprimer' atelier.num_atelier %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="stack">
+  <section class="panel">
+    <div class="panel-header"><h2>Informations</h2></div>
+    <div class="panel-body">
+      <dl class="details">
+        <dt>Numéro</dt><dd class="mono">{{ atelier.num_atelier }}</dd>
+        <dt>Libellé</dt><dd>{{ atelier.libelle }}</dd>
+        <dt>Responsable</dt><dd><a href="{% url 'operateurs_detail' atelier.responsable_id %}">{{ atelier.responsable.nom_complet }}</a> <span class="muted">({{ atelier.responsable_id }})</span></dd>
+        <dt>Lignes de production</dt><dd>{{ lignes|length }}</dd>
+        <dt>Temps d'arrêt cumulé</dt><dd>{{ temps_arret|duree }}</dd>
+      </dl>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Lignes de production</h2></div>
+    <div class="defilement">
+      <table class="table">
+        <thead><tr><th>Ligne</th><th class="num">Opérateurs nécessaires</th><th class="num">Machines</th><th class="num">Lots</th></tr></thead>
+        <tbody>
+          {% for ligne in lignes %}
+            <tr>
+              <td><a href="{% url 'lignes_detail' ligne.num_ligne %}">Ligne {{ ligne.num_ligne }}</a></td>
+              <td class="num">{{ ligne.nb_operateurs_necessaires }}</td>
+              <td class="num">{{ ligne.nb_machines }}</td>
+              <td class="num">{{ ligne.nb_lots }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="vide">Aucune ligne dans cet atelier.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

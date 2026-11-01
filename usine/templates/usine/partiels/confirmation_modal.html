@@ -1,0 +1,21 @@
+<form method="post" action="{{ action }}" class="fenetre-contenu" data-large="0">
+  {% csrf_token %}
+  <div class="fenetre-entete">
+    <h2>{{ titre }}</h2>
+    <button type="button" class="icon-btn" data-fermer aria-label="Fermer">{% icone "x" 18 %}</button>
+  </div>
+  <div class="fenetre-corps">
+    <div class="alert {% if bouton %}alert-danger{% else %}alert-info{% endif %}">
+      {% if bouton %}{% icone "triangle-alert" 16 %}{% else %}{% icone "info" 16 %}{% endif %}
+      <div>{{ message }}</div>
+    </div>
+  </div>
+  <div class="fenetre-pied">
+    {% if bouton %}
+      <button type="button" class="btn btn-secondary" data-fermer>Annuler</button>
+      <button type="submit" class="btn {% if danger %}btn-danger{% else %}btn-primary{% endif %}">{{ bouton }}</button>
+    {% else %}
+      <button type="button" class="btn btn-secondary" data-fermer>Fermer</button>
+    {% endif %}
+  </div>
+</form>

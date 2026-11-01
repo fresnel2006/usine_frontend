@@ -1,0 +1,56 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Pièces et stock{% endblock %}
+{% block contenu %}
+{% peut "pieces" "creer" as droit_creer %}{% peut "pieces" "modifier" as droit_modifier %}{% peut "pieces" "supprimer" as droit_supprimer %}{% peut "achats" "creer" as droit_achat %}
+<div class="page-entete">
+  <div class="page-textes">
+    <h1>Pièces et stock</h1>
+    <p class="sous-titre">Pièces détachées, nomenclature et achats. Stock faible : {{ seuil }} exemplaires ou moins.</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_achat %}<a href="{% url 'pieces_achat_creer' %}" class="btn btn-secondary" data-modal>{% icone "shopping-cart" 16 %}Enregistrer un achat</a>{% endif %}
+    {% if droit_creer %}<a href="{% url 'pieces_creer' %}" class="btn btn-primary" data-modal>{% icone "plus" 16 %}Nouvelle pièce</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="tableau" data-tableau>
+  {% include "usine/partiels/tableau_barre.html" with placeholder="Rechercher une pièce..." %}
+  <div class="defilement">
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-tri="texte">Référence{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Libellé{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre" class="num">Prix unitaire HT{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre" class="num">Stock{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre" class="num">Composants{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Dernier achat{% include "usine/partiels/tri.html" %}</th>
+          <th class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for piece in pieces %}
+          <tr>
+            <td class="mono"><a href="{% url 'pieces_detail' piece.reference %}">{{ piece.reference }}</a></td>
+            <td>{{ piece.libelle }}</td>
+            <td class="num" data-valeur="{{ piece.prix_unitaire_ht }}">{{ piece.prix_unitaire_ht|fcfa }}</td>
+            <td class="num" data-valeur="{{ piece.quantite_stock }}">
+              {% if piece.quantite_stock <= seuil %}<span class="badge badge-danger">Stock faible</span> {% endif %}{{ piece.quantite_stock|nombre }}
+            </td>
+            <td class="num">{{ piece.nb_composants }}</td>
+            <td data-valeur="{{ piece.dernier_achat|date:'Y-m-d' }}">{{ piece.dernier_achat|date_fr }}</td>
+            <td class="col-actions"><div class="actions">
+              <a href="{% url 'pieces_detail' piece.reference %}" class="icon-btn" title="Voir le détail">{% icone "eye" 16 %}</a>
+              {% if droit_achat %}<a href="{% url 'pieces_achat_creer' %}?piece={{ piece.reference|urlencode }}" class="icon-btn" data-modal title="Enregistrer un achat">{% icone "shopping-cart" 16 %}</a>{% endif %}
+              {% if droit_modifier %}<a href="{% url 'pieces_modifier' piece.reference %}" class="icon-btn" data-modal title="Modifier">{% icone "pencil" 16 %}</a>{% endif %}
+              {% if droit_supprimer %}<a href="{% url 'pieces_supprimer' piece.reference %}" class="icon-btn danger" data-modal title="Supprimer">{% icone "trash-2" 16 %}</a>{% endif %}
+            </div></td>
+          </tr>
+        {% endfor %}
+        <tr class="ligne-vide"><td colspan="7" class="vide">Aucune pièce.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% include "usine/partiels/tableau_pied.html" %}
+</div>
+{% endblock %}

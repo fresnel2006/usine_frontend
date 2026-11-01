@@ -1,0 +1,73 @@
+{% extends "usine/base.html" %}
+{% block titre_onglet %}Connexion{% endblock %}
+{% block corps %}
+<div class="connexion">
+  <section class="presentation">
+    <div class="marque">
+      <span class="logo">{% icone "factory" 22 %}</span>
+      <div>
+        <div class="nom-app">Akwaba Agro-Industrie</div>
+        <div class="societe">Zone industrielle de Yopougon, Abidjan</div>
+      </div>
+    </div>
+    <div class="presentation-texte">
+      <h1>Gestion de l'usine</h1>
+      <p>Suivi de la production, du personnel, des incidents et de la maintenance des équipements.</p>
+    </div>
+    <ul class="presentation-liste">
+      <li>Ateliers, lignes de production et lots</li>
+      <li>Opérateurs, équipes et incidents</li>
+      <li>Machines, maintenances, pièces et fournisseurs</li>
+    </ul>
+  </section>
+
+  <section class="zone-formulaire">
+    <form method="post" action="{% url 'connexion' %}" class="carte-connexion" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="suivant" value="{{ suivant }}">
+      <div>
+        <h2>Connexion</h2>
+        <p class="muted">Saisissez vos identifiants pour accéder à l'application.</p>
+      </div>
+      {% if session_expiree and not erreur %}
+        <div class="alert alert-info" role="status">{% icone "clock" 16 %}<div>Votre session a expiré, veuillez vous reconnecter.</div></div>
+      {% endif %}
+      {% if erreur %}
+        <div class="alert alert-danger" role="alert">{% icone "circle-alert" 16 %}<div>{{ erreur }}</div></div>
+      {% endif %}
+
+      {% include "usine/partiels/champ.html" with champ=form.login %}
+
+      <div class="field">
+        <label for="{{ form.mot_de_passe.id_for_label }}">Mot de passe<span class="required" aria-hidden="true">*</span></label>
+        <div class="mot-de-passe">
+          {{ form.mot_de_passe }}
+          <button type="button" class="oeil" data-oeil aria-label="Afficher le mot de passe">
+            <span class="oeil-ouvert">{% icone "eye" 16 %}</span><span class="oeil-ferme" hidden>{% icone "eye-off" 16 %}</span>
+          </button>
+        </div>
+        {% for e in form.mot_de_passe.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+      </div>
+
+      <button type="submit" class="btn btn-primary bouton-large">{% icone "lock" 16 %}Se connecter</button>
+      <details>
+        <summary class="small muted">Mot de passe oublié ?</summary>
+        <p class="small muted">Contactez l'administrateur pour réinitialiser votre mot de passe.</p>
+      </details>
+    </form>
+
+    {% if mode_demo %}
+      <div class="panel comptes-demo">
+        <div class="panel-header"><h3>Comptes de démonstration</h3></div>
+        <div class="panel-body">
+          <table>
+            {% for login, mdp, role in comptes_demo %}
+              <tr><td class="mono">{{ login }}</td><td class="mono">{{ mdp }}</td><td class="muted">{{ role }}</td></tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

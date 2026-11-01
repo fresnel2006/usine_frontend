@@ -1,0 +1,10 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Accès refusé{% endblock %}
+{% block contenu %}
+<div class="page-message">
+  {% icone "shield-alert" 36 %}
+  <h1>Accès refusé</h1>
+  <p class="muted">{{ message }}</p>
+  <a href="{% url 'tableau_de_bord' %}" class="btn btn-primary">{% icone "layout-dashboard" 16 %}Retour au tableau de bord</a>
+</div>
+{% endblock %}

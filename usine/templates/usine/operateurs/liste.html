@@ -1,0 +1,53 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Opérateurs{% endblock %}
+{% block contenu %}
+{% peut "operateurs" "creer" as droit_creer %}{% peut "operateurs" "modifier" as droit_modifier %}{% peut "operateurs" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <h1>Opérateurs</h1>
+    <p class="sous-titre">Chaque opérateur appartient à une seule équipe.</p>
+  </div>
+  {% if droit_creer %}
+    <div class="page-actions"><a href="{% url 'operateurs_creer' %}" class="btn btn-primary" data-modal>{% icone "user-plus" 16 %}Ajouter un opérateur</a></div>
+  {% endif %}
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="tableau" data-tableau>
+  {% include "usine/partiels/tableau_barre.html" with placeholder="Rechercher un nom, un matricule, une équipe..." %}
+  <div class="defilement">
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-tri="texte">Matricule{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Nom{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Équipe{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Date d'entrée{% include "usine/partiels/tri.html" %}</th>
+          <th>Responsabilité</th>
+          <th class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in operateurs %}
+          <tr>
+            <td class="mono">{{ o.matricule }}</td>
+            <td><a href="{% url 'operateurs_detail' o.matricule %}">{{ o.nom_complet }}</a></td>
+            <td><a href="{% url 'equipes_detail' o.equipe_id %}">{{ o.equipe.libelle }}</a></td>
+            <td data-valeur="{{ o.date_entree|date:'Y-m-d' }}">{{ o.date_entree|date_fr }}</td>
+            <td>
+              {% if o.atelier_dirige %}<span class="badge badge-primary">Resp. {{ o.atelier_dirige.libelle }}</span>{% endif %}
+              {% if o.equipe_dirigee %}<span class="badge badge-primary-strong">Resp. {{ o.equipe_dirigee.libelle }}</span>{% endif %}
+            </td>
+            <td class="col-actions"><div class="actions">
+              <a href="{% url 'operateurs_detail' o.matricule %}" class="icon-btn" title="Voir la fiche">{% icone "eye" 16 %}</a>
+              {% if droit_modifier %}<a href="{% url 'operateurs_modifier' o.matricule %}" class="icon-btn" data-modal title="Modifier">{% icone "pencil" 16 %}</a>{% endif %}
+              {% if droit_supprimer %}<a href="{% url 'operateurs_supprimer' o.matricule %}" class="icon-btn danger" data-modal title="Supprimer">{% icone "trash-2" 16 %}</a>{% endif %}
+            </div></td>
+          </tr>
+        {% endfor %}
+        <tr class="ligne-vide"><td colspan="6" class="vide">Aucun opérateur.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% include "usine/partiels/tableau_pied.html" %}
+</div>
+{% endblock %}

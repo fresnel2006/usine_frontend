@@ -1,6 +1,17 @@
-node_modules/
-dist/
+# Secrets
 .env
 .env.local
-.vercel
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Django
+staticfiles/
+
+# Divers
+.vscode/
+.idea/
 *.log
+Thumbs.db

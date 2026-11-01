@@ -1,0 +1,52 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Tableau de bord{% endblock %}
+{% block contenu %}
+{% include "usine/dashboard/entete.html" %}
+<div class="raccourcis">
+  <a href="{% url 'incidents_creer' %}" class="btn btn-primary" data-modal>{% icone "triangle-alert" 16 %}Déclarer un incident</a>
+  <a href="{% url 'operateurs_creer' %}{% if equipe %}?equipe={{ equipe.num_equipe }}{% endif %}" class="btn btn-secondary" data-modal>{% icone "user-plus" 16 %}Ajouter un opérateur</a>
+</div>
+<div class="indicateurs">
+  <div class="indicateur"><div class="indicateur-entete">Mon équipe {% icone "users-round" 16 %}</div><div class="valeur" style="font-size:16px">{% if equipe %}{{ equipe.libelle }}{% else %}-{% endif %}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Membres {% icone "users" 16 %}</div><div class="valeur">{{ membres|length }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Incidents récents {% icone "triangle-alert" 16 %}</div><div class="valeur">{{ incidents_recents|length }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Temps d'arrêt total {% icone "timer" 16 %}</div><div class="valeur">{{ temps_arret_total|duree }}</div></div>
+</div>
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-header"><h2>Membres de mon équipe</h2>{% if equipe %}<a href="{% url 'equipes_detail' equipe.num_equipe %}" class="small">Voir l'équipe</a>{% endif %}</div>
+    <ul class="liste-simple">
+      {% for o in membres %}
+        <li><a href="{% url 'operateurs_detail' o.matricule %}">{{ o.nom_complet }}</a><span class="mono muted">{{ o.matricule }}</span></li>
+      {% empty %}
+        <li class="muted">Aucun membre.</li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Temps d'arrêt par type d'incident</h2></div>
+    <div class="panel-body">{% include "usine/partiels/barres.html" with graphique=graphique_types unite="duree" %}</div>
+  </section>
+</div>
+<section class="panel marge-haut">
+  <div class="panel-header"><h2>Incidents récents</h2><a href="{% url 'incidents' %}" class="small">Tous les incidents</a></div>
+  <div class="defilement">
+    <table class="table">
+      <thead><tr><th>N°</th><th>Type</th><th>Lot</th><th>Atelier</th><th class="num">Temps d'arrêt</th></tr></thead>
+      <tbody>
+        {% for i in incidents_recents %}
+          <tr>
+            <td><a href="{% url 'incidents_detail' i.num_incident %}">{{ i.num_incident }}</a></td>
+            <td>{{ i.type_incident.libelle }}</td>
+            <td><a href="{% url 'lots_detail' i.lot_id %}">{{ i.lot_id }}</a></td>
+            <td>{{ i.lot.ligne.atelier.libelle }}</td>
+            <td class="num">{{ i.temps_arret|duree }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="vide">Aucun incident.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}{{ produit.designation }}{% endblock %}
+{% block contenu %}
+{% peut "produits" "modifier" as droit_modifier %}{% peut "produits" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'produits' %}" class="retour">{% icone "arrow-left" 14 %}Produits</a>
+    <h1>{{ produit.designation }}</h1>
+    <p class="sous-titre mono">{{ produit.reference }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_modifier %}<a href="{% url 'produits_modifier' produit.reference %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'produits_supprimer' produit.reference %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="stack">
+  <section class="panel">
+    <div class="panel-header"><h2>Informations</h2></div>
+    <div class="panel-body">
+      <dl class="details">
+        <dt>Référence</dt><dd class="mono">{{ produit.reference }}</dd>
+        <dt>Désignation</dt><dd>{{ produit.designation }}</dd>
+        <dt>Prix de vente unitaire</dt><dd>{{ produit.prix_vente_unitaire|fcfa }}</dd>
+        <dt>Quantité en stock</dt><dd>{{ produit.quantite_stock|nombre }}</dd>
+      </dl>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Lots fabriqués</h2><span class="badge">{{ lots|length }}</span></div>
+    <div class="defilement">
+      <table class="table">
+        <thead><tr><th>Lot</th><th>Date</th><th>Ligne</th><th>Atelier</th></tr></thead>
+        <tbody>
+          {% for lot in lots %}
+            <tr>
+              <td><a href="{% url 'lots_detail' lot.num_lot %}">{{ lot.num_lot }}</a></td>
+              <td>{{ lot.date_production|date_fr }}</td>
+              <td>Ligne {{ lot.ligne_id }}</td>
+              <td>{{ lot.ligne.atelier.libelle }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="vide">Aucun lot pour ce produit.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

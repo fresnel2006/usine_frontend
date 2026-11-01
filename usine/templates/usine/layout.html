@@ -1,0 +1,56 @@
+{% extends "usine/base.html" %}
+{% block corps %}
+<div class="app">
+  <aside class="sidebar" aria-label="Menu principal">
+    <div class="marque">
+      <span class="logo">{% icone "factory" 18 %}</span>
+      <div>
+        <div class="nom-app">Gestion de l'usine</div>
+        <div class="societe">Akwaba Agro-Industrie</div>
+      </div>
+      <button type="button" class="fermer-menu" data-menu-fermer aria-label="Fermer le menu">{% icone "x" 18 %}</button>
+    </div>
+    <nav class="nav">
+      {% for groupe in menu %}
+        <div class="groupe">
+          <div class="titre-groupe">{{ groupe.titre }}</div>
+          {% for lien in groupe.liens %}
+            <a href="{% url lien.url %}" class="lien{% if lien.actif %} actif{% endif %}"{% if lien.actif %} aria-current="page"{% endif %}>
+              {% icone lien.icone 17 %}<span>{{ lien.libelle }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </nav>
+    <div class="pied-sidebar">
+      <form method="post" action="{% url 'deconnexion' %}">
+        {% csrf_token %}
+        <button type="submit" class="lien">{% icone "log-out" 17 %}<span>Se déconnecter</span></button>
+      </form>
+    </div>
+  </aside>
+  <div class="voile" data-menu-fermer></div>
+
+  <div class="principal">
+    <header class="entete">
+      <button type="button" class="bouton-menu" data-menu-ouvrir aria-label="Ouvrir le menu">{% icone "menu" 22 %}</button>
+      <div class="espace"></div>
+      <a href="{% url 'profil' %}" class="utilisateur-connecte" title="Mon profil">
+        <span class="avatar">{{ utilisateur.nom_affiche|initiales }}</span>
+        <span class="identite">
+          <span class="nom">{{ utilisateur.nom_affiche }}</span>
+          {% badge_role utilisateur.role %}
+        </span>
+      </a>
+      <form method="post" action="{% url 'deconnexion' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm">{% icone "log-out" 15 %}<span class="texte-deconnexion">Se déconnecter</span></button>
+      </form>
+    </header>
+
+    <main class="contenu">
+      {% block contenu %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

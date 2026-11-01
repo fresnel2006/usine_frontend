@@ -1,0 +1,10 @@
+<section class="panel">
+  <div class="panel-header"><h2>Pièces en stock faible</h2><span class="badge badge-danger">{{ pieces_faibles|length }}</span></div>
+  <ul class="liste-simple">
+    {% for p in pieces_faibles %}
+      <li><a href="{% url 'pieces_detail' p.reference %}"><span class="mono">{{ p.reference }}</span> {{ p.libelle }}</a><span class="badge badge-danger">{{ p.quantite_stock }} en stock</span></li>
+    {% empty %}
+      <li class="muted">Aucune pièce sous le seuil de {{ seuil }} exemplaires.</li>
+    {% endfor %}
+  </ul>
+</section>

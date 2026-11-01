@@ -1,0 +1,150 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}{{ piece.libelle }}{% endblock %}
+{% block contenu %}
+{% peut "pieces" "modifier" as droit_modifier %}{% peut "pieces" "supprimer" as droit_supprimer %}
+{% peut "nomenclature" "creer" as droit_nom_creer %}{% peut "nomenclature" "modifier" as droit_nom_modifier %}{% peut "nomenclature" "supprimer" as droit_nom_supprimer %}
+{% peut "achats" "creer" as droit_achat_creer %}{% peut "achats" "modifier" as droit_achat_modifier %}{% peut "achats" "supprimer" as droit_achat_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'pieces' %}" class="retour">{% icone "arrow-left" 14 %}Pièces et stock</a>
+    <h1>{{ piece.libelle }}</h1>
+    <p class="sous-titre mono">{{ piece.reference }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_achat_creer %}<a href="{% url 'pieces_achat_creer' %}?piece={{ piece.reference|urlencode }}" class="btn btn-secondary" data-modal>{% icone "shopping-cart" 16 %}Enregistrer un achat</a>{% endif %}
+    {% if droit_modifier %}<a href="{% url 'pieces_modifier' piece.reference %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'pieces_supprimer' piece.reference %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+
+<div class="indicateurs">
+  <div class="indicateur"><div class="indicateur-entete">Stock {% icone "layers" 16 %}</div><div class="valeur">{{ piece.quantite_stock|nombre }}</div>
+    {% if piece.quantite_stock <= seuil %}<span class="badge badge-danger">Stock faible</span>{% else %}<span class="muted small">exemplaires</span>{% endif %}</div>
+  <div class="indicateur"><div class="indicateur-entete">Prix unitaire HT {% icone "tags" 16 %}</div><div class="valeur">{{ piece.prix_unitaire_ht|fcfa }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Composants directs {% icone "list-tree" 16 %}</div><div class="valeur">{{ piece.composants.count }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Achats enregistrés {% icone "shopping-cart" 16 %}</div><div class="valeur">{{ achats|length }}</div></div>
+</div>
+
+<nav class="tabs" aria-label="Sections de la pièce">
+  <a href="?onglet=nomenclature" class="tab{% if onglet == 'nomenclature' %} active{% endif %}">{% icone "list-tree" 15 %}Nomenclature</a>
+  <a href="?onglet=achats" class="tab{% if onglet == 'achats' %} active{% endif %}">{% icone "shopping-cart" 15 %}Achats et prix</a>
+  <a href="?onglet=consommations" class="tab{% if onglet == 'consommations' %} active{% endif %}">{% icone "wrench" 15 %}Consommations</a>
+</nav>
+
+{% if onglet == "achats" %}
+  <div class="stack">
+    <section class="panel">
+      <div class="panel-header"><h2>Historique des prix par fournisseur</h2></div>
+      <div class="defilement">
+        <table class="table">
+          <thead><tr><th>Fournisseur</th><th class="num">Achats</th><th class="num">Quantité totale</th><th class="num">Prix min.</th><th class="num">Prix moyen</th><th class="num">Prix max.</th><th>Dernier achat</th></tr></thead>
+          <tbody>
+            {% for f in prix_par_fournisseur %}
+              <tr>
+                <td><a href="{% url 'fournisseurs_detail' f.fournisseur__code_fournisseur %}">{{ f.fournisseur__raison_sociale }}</a></td>
+                <td class="num">{{ f.nb }}</td>
+                <td class="num">{{ f.quantite|nombre }}</td>
+                <td class="num">{{ f.prix_min|fcfa }}</td>
+                <td class="num">{{ f.prix_moyen|floatformat:0|fcfa }}</td>
+                <td class="num">{{ f.prix_max|fcfa }}</td>
+                <td>{{ f.dernier|date_fr }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="7" class="vide">Aucun achat pour cette pièce.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><h2>Achats</h2></div>
+      <div class="defilement">
+        <table class="table">
+          <thead><tr><th>Date</th><th>Fournisseur</th><th class="num">Prix d'achat</th><th class="num">Quantité</th><th class="num">Montant</th><th class="col-actions"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            {% for a in achats %}
+              <tr>
+                <td>{{ a.date_achat|date_fr }}</td>
+                <td><a href="{% url 'fournisseurs_detail' a.fournisseur_id %}">{{ a.fournisseur.raison_sociale }}</a></td>
+                <td class="num">{{ a.prix_achat|fcfa }}</td>
+                <td class="num">{{ a.quantite }}</td>
+                <td class="num">{{ a.prix_achat|fois:a.quantite|fcfa }}</td>
+                <td class="col-actions"><div class="actions">
+                  {% if droit_achat_modifier %}<a href="{% url 'pieces_achat_modifier' piece.reference a.fournisseur_id a.date_achat %}" class="icon-btn" data-modal title="Modifier">{% icone "pencil" 16 %}</a>{% endif %}
+                  {% if droit_achat_supprimer %}<a href="{% url 'pieces_achat_supprimer' piece.reference a.fournisseur_id a.date_achat %}" class="icon-btn danger" data-modal title="Supprimer">{% icone "trash-2" 16 %}</a>{% endif %}
+                </div></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="6" class="vide">Aucun achat pour cette pièce.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+{% elif onglet == "consommations" %}
+  <section class="panel">
+    <div class="panel-header"><h2>Consommations lors des maintenances</h2></div>
+    <div class="defilement">
+      <table class="table">
+        <thead><tr><th>Maintenance</th><th>Date</th><th>Machine</th><th class="num">Quantité</th></tr></thead>
+        <tbody>
+          {% for c in consommations %}
+            <tr>
+              <td><a href="{% url 'maintenances_detail' c.maintenance_id %}">{{ c.maintenance_id }}</a></td>
+              <td>{{ c.maintenance.date_heure_debut|date_heure_fr }}</td>
+              <td>{{ c.maintenance.machine.designation }}</td>
+              <td class="num">{{ c.quantite }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="vide">Cette pièce n'a pas encore été consommée.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% else %}
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Arbre des composants</h2>
+        {% if droit_nom_creer %}<a href="{% url 'pieces_composant_ajouter' piece.reference %}" class="btn btn-secondary btn-sm" data-modal>{% icone "plus" 14 %}Ajouter un composant</a>{% endif %}
+      </div>
+      <div class="defilement">
+        <table class="table">
+          <thead><tr><th>Composant</th><th class="num">Qté unitaire</th><th class="num">Qté totale</th><th class="col-actions"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            {% for n in arbre %}
+              <tr>
+                <td>
+                  <span style="padding-left: {% widthratio n.niveau 1 20 %}px">{% if n.niveau %}{% icone "chevron-right" 12 %}{% endif %}
+                    <a href="{% url 'pieces_detail' n.piece.reference %}" class="mono">{{ n.piece.reference }}</a> {{ n.piece.libelle }}</span>
+                </td>
+                <td class="num">{{ n.quantite }}</td>
+                <td class="num">{{ n.total }}</td>
+                <td class="col-actions">{% if n.direct %}<div class="actions">
+                  {% if droit_nom_modifier %}<a href="{% url 'pieces_composant_modifier' piece.reference n.piece.reference %}" class="icon-btn" data-modal title="Modifier la quantité">{% icone "pencil" 16 %}</a>{% endif %}
+                  {% if droit_nom_supprimer %}<a href="{% url 'pieces_composant_retirer' piece.reference n.piece.reference %}" class="icon-btn danger" data-modal title="Retirer">{% icone "trash-2" 16 %}</a>{% endif %}
+                </div>{% endif %}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="vide">Cette pièce n'est composée d'aucune autre pièce.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><h2>Entre dans la composition de</h2></div>
+      <ul class="liste-simple">
+        {% for lien in utilisee_dans %}
+          <li><a href="{% url 'pieces_detail' lien.composee_id %}"><span class="mono">{{ lien.composee_id }}</span> {{ lien.composee.libelle }}</a><span class="muted">x {{ lien.quantite }}</span></li>
+        {% empty %}
+          <li class="muted">Cette pièce n'entre dans aucune autre pièce.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+{% endif %}
+{% endblock %}

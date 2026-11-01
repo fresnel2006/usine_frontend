@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: gestion-usine
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: python manage.py init_db && gunicorn config.wsgi --bind 0.0.0.0:$PORT
+    healthCheckPath: /connexion
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      - key: SEUIL_STOCK_FAIBLE
+        value: "5"
+      - key: MODE_DEMO
+        value: "true"

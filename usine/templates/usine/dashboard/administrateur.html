@@ -1,0 +1,42 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Tableau de bord{% endblock %}
+{% block contenu %}
+{% include "usine/dashboard/entete.html" %}
+<div class="raccourcis">
+  <a href="{% url 'utilisateurs_creer' %}" class="btn btn-primary" data-modal>{% icone "user-plus" 16 %}Nouveau compte</a>
+  <a href="{% url 'fournisseurs_creer' %}" class="btn btn-secondary" data-modal>{% icone "truck" 16 %}Nouveau fournisseur</a>
+</div>
+<div class="indicateurs">
+  <div class="indicateur"><div class="indicateur-entete">Lots des 7 derniers jours {% icone "boxes" 16 %}</div><div class="valeur">{{ lots_semaine }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Temps d'arrêt total {% icone "timer" 16 %}</div><div class="valeur">{{ temps_arret_total|duree }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Pièces en stock faible {% icone "triangle-alert" 16 %}</div><div class="valeur">{{ pieces_faibles|length }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Fournisseurs {% icone "truck" 16 %}</div><div class="valeur">{{ nb_fournisseurs }}</div></div>
+</div>
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-header"><h2>Comptes par rôle</h2><a href="{% url 'utilisateurs' %}" class="small">Gérer les comptes</a></div>
+    <table class="table">
+      <thead><tr><th>Rôle</th><th class="num">Actifs</th><th class="num">Désactivés</th></tr></thead>
+      <tbody>
+        {% for r in comptes_par_role %}
+          <tr><td>{{ r.libelle }}</td><td class="num">{{ r.actifs }}</td><td class="num">{{ r.inactifs }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Comptes de l'application</h2></div>
+    <ul class="liste-simple">
+      {% for c in comptes %}
+        <li><span><span class="mono">{{ c.login }}</span> <span class="muted">{{ c.nom_affiche }}</span></span>
+          <span>{% badge_role c.role %}{% if not c.actif %} <span class="badge badge-danger">Désactivé</span>{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Temps d'arrêt par atelier</h2></div>
+    <div class="panel-body">{% include "usine/partiels/barres.html" with graphique=arrets_atelier unite="duree" %}</div>
+  </section>
+  {% include "usine/dashboard/pieces_faibles.html" %}
+</div>
+{% endblock %}

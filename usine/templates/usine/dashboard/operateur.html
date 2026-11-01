@@ -1,0 +1,42 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Tableau de bord{% endblock %}
+{% block contenu %}
+{% include "usine/dashboard/entete.html" %}
+<div class="raccourcis">
+  <a href="{% url 'maintenances_creer' %}" class="btn btn-primary" data-modal>{% icone "wrench" 16 %}Enregistrer une maintenance</a>
+  <a href="{% url 'pieces_achat_creer' %}" class="btn btn-secondary" data-modal>{% icone "shopping-cart" 16 %}Enregistrer un achat de pièce</a>
+</div>
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-header"><h2>Mes dernières maintenances</h2><a href="{% url 'maintenances' %}" class="small">Toutes les maintenances</a></div>
+    <div class="defilement">
+      <table class="table">
+        <thead><tr><th>N°</th><th>Début</th><th>Machine</th><th class="num">Durée</th></tr></thead>
+        <tbody>
+          {% for mt in mes_maintenances %}
+            <tr>
+              <td><a href="{% url 'maintenances_detail' mt.num_maintenance %}">{{ mt.num_maintenance }}</a></td>
+              <td>{{ mt.date_heure_debut|date_heure_fr }}</td>
+              <td>{{ mt.machine.designation }}</td>
+              <td class="num">{{ mt.duree|duree }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="vide">Vous n'avez encore effectué aucune maintenance.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% include "usine/dashboard/pieces_faibles.html" %}
+  <section class="panel">
+    <div class="panel-header"><h2>{% if ligne %}Machines de ma ligne ({{ ligne }}){% else %}Machines sur lesquelles je suis intervenu{% endif %}</h2></div>
+    <ul class="liste-simple">
+      {% for machine in machines %}
+        <li><a href="{% url 'machines_detail' machine.num_machine %}">{{ machine.designation }}</a><span class="muted">Ligne {{ machine.ligne_id }}</span></li>
+      {% empty %}
+        <li class="muted">Aucune machine.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

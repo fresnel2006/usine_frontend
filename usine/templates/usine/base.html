@@ -1,0 +1,15 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre_onglet %}Gestion de l'usine{% endblock %} - Akwaba Agro-Industrie</title>
+  <link rel="icon" href="{% static 'usine/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'usine/css/app.css' %}">
+  <script src="{% static 'usine/js/app.js' %}" defer></script>
+</head>
+<body>
+  {% block corps %}{% endblock %}
+  {% include "usine/partiels/messages.html" %}
+</body>
+</html>

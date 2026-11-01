@@ -1,0 +1,76 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}{{ operateur.nom_complet }}{% endblock %}
+{% block contenu %}
+{% peut "operateurs" "modifier" as droit_modifier %}{% peut "operateurs" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'operateurs' %}" class="retour">{% icone "arrow-left" 14 %}Opérateurs</a>
+    <h1>{{ operateur.nom_complet }}</h1>
+    <p class="sous-titre mono">{{ operateur.matricule }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_modifier %}<a href="{% url 'operateurs_modifier' operateur.matricule %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'operateurs_supprimer' operateur.matricule %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="stack">
+  <section class="panel">
+    <div class="panel-header"><h2>Fiche</h2></div>
+    <div class="panel-body">
+      <dl class="details">
+        <dt>Matricule</dt><dd class="mono">{{ operateur.matricule }}</dd>
+        <dt>Nom</dt><dd>{{ operateur.nom }}</dd>
+        <dt>Prénom</dt><dd>{{ operateur.prenom }}</dd>
+        <dt>Date d'entrée</dt><dd>{{ operateur.date_entree|date_fr }}</dd>
+        <dt>Équipe</dt><dd><a href="{% url 'equipes_detail' operateur.equipe_id %}">{{ operateur.equipe.libelle }}</a>{% if operateur.equipe.responsable %} <span class="muted">(responsable : {{ operateur.equipe.responsable.nom_complet }})</span>{% endif %}</dd>
+        {% if operateur.atelier_dirige %}<dt>Responsable de l'atelier</dt><dd><a href="{% url 'ateliers_detail' operateur.atelier_dirige.num_atelier %}">{{ operateur.atelier_dirige.libelle }}</a></dd>{% endif %}
+        {% if operateur.equipe_dirigee %}<dt>Responsable de l'équipe</dt><dd>{{ operateur.equipe_dirigee.libelle }}</dd>{% endif %}
+        <dt>Compte utilisateur</dt><dd>{% for c in comptes %}<span class="mono">{{ c.login }}</span> {% badge_role c.role %}{% if not c.actif %} <span class="badge badge-danger">Désactivé</span>{% endif %}{% empty %}<span class="muted">Aucun</span>{% endfor %}</dd>
+      </dl>
+    </div>
+  </section>
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-header"><h2>Lots de production</h2><span class="badge">{{ lots|length }}</span></div>
+      <div class="defilement">
+        <table class="table">
+          <thead><tr><th>Lot</th><th>Date</th><th>Produit</th><th>Ligne</th></tr></thead>
+          <tbody>
+            {% for lot in lots %}
+              <tr>
+                <td><a href="{% url 'lots_detail' lot.num_lot %}">{{ lot.num_lot }}</a></td>
+                <td>{{ lot.date_production|date_fr }}</td>
+                <td>{{ lot.produit.designation }}</td>
+                <td>Ligne {{ lot.ligne_id }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="vide">Aucun lot.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><h2>Maintenances</h2><span class="badge">{{ maintenances|length }}</span></div>
+      <div class="defilement">
+        <table class="table">
+          <thead><tr><th>N°</th><th>Début</th><th>Machine</th><th class="num">Durée</th></tr></thead>
+          <tbody>
+            {% for mt in maintenances %}
+              <tr>
+                <td><a href="{% url 'maintenances_detail' mt.num_maintenance %}">{{ mt.num_maintenance }}</a></td>
+                <td>{{ mt.date_heure_debut|date_heure_fr }}</td>
+                <td>{{ mt.machine.designation }}</td>
+                <td class="num">{{ mt.duree|duree }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="vide">Aucune maintenance.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

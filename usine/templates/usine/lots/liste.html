@@ -1,0 +1,60 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Lots de production{% endblock %}
+{% block contenu %}
+{% peut "lots" "creer" as droit_creer %}{% peut "lots" "modifier" as droit_modifier %}{% peut "lots" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <h1>Lots de production</h1>
+    <p class="sous-titre">Un lot est fabriqué sur une ligne, à une date, par un ou plusieurs opérateurs.</p>
+  </div>
+  {% if droit_creer %}
+    <div class="page-actions"><a href="{% url 'lots_creer' %}" class="btn btn-primary" data-modal>{% icone "plus" 16 %}Nouveau lot</a></div>
+  {% endif %}
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="tableau" data-tableau>
+  <div class="tableau-barre">
+    <label class="recherche">
+      {% icone "search" 16 %}
+      <input type="search" class="input" data-recherche placeholder="Rechercher un lot, un produit, un opérateur..." aria-label="Rechercher dans la liste">
+    </label>
+    <form method="get" class="filtres" data-filtres>
+      {{ filtres.du }}{{ filtres.au }}{{ filtres.ligne }}{{ filtres.produit }}
+      <noscript><button type="submit" class="btn btn-secondary btn-sm">Filtrer</button></noscript>
+      {% if filtre_actif %}<a href="{% url 'lots' %}" class="btn btn-ghost btn-sm">{% icone "x" 14 %}Effacer les filtres</a>{% endif %}
+    </form>
+  </div>
+  <div class="defilement">
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-tri="nombre">Lot{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Date{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre">Ligne{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Produit{% include "usine/partiels/tri.html" %}</th>
+          <th>Opérateurs</th>
+          <th class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lot in lots %}
+          <tr>
+            <td class="mono"><a href="{% url 'lots_detail' lot.num_lot %}">{{ lot.num_lot }}</a></td>
+            <td data-valeur="{{ lot.date_production|date:'Y-m-d' }}">{{ lot.date_production|date_fr }}</td>
+            <td data-valeur="{{ lot.ligne_id }}"><a href="{% url 'lignes_detail' lot.ligne_id %}">Ligne {{ lot.ligne_id }}</a> <span class="muted small">{{ lot.ligne.atelier.libelle }}</span></td>
+            <td>{{ lot.produit.designation }}</td>
+            <td>{% for p in lot.participations.all %}{{ p.operateur.nom_complet }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+            <td class="col-actions"><div class="actions">
+              <a href="{% url 'lots_detail' lot.num_lot %}" class="icon-btn" title="Voir le détail">{% icone "eye" 16 %}</a>
+              {% if droit_modifier %}<a href="{% url 'lots_modifier' lot.num_lot %}" class="icon-btn" data-modal title="Modifier">{% icone "pencil" 16 %}</a>{% endif %}
+              {% if droit_supprimer %}<a href="{% url 'lots_supprimer' lot.num_lot %}" class="icon-btn danger" data-modal title="Supprimer">{% icone "trash-2" 16 %}</a>{% endif %}
+            </div></td>
+          </tr>
+        {% endfor %}
+        <tr class="ligne-vide"><td colspan="6" class="vide">Aucun lot ne correspond à ces critères.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% include "usine/partiels/tableau_pied.html" %}
+</div>
+{% endblock %}

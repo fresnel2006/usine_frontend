@@ -1,0 +1,50 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Lignes de production{% endblock %}
+{% block contenu %}
+{% peut "lignes" "creer" as droit_creer %}{% peut "lignes" "modifier" as droit_modifier %}{% peut "lignes" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <h1>Lignes de production</h1>
+    <p class="sous-titre">Chaque ligne appartient à un atelier et regroupe des machines.</p>
+  </div>
+  {% if droit_creer %}
+    <div class="page-actions"><a href="{% url 'lignes_creer' %}" class="btn btn-primary" data-modal>{% icone "plus" 16 %}Nouvelle ligne</a></div>
+  {% endif %}
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="tableau" data-tableau>
+  {% include "usine/partiels/tableau_barre.html" with placeholder="Rechercher une ligne ou un atelier..." %}
+  <div class="defilement">
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-tri="nombre">Ligne{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Atelier{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre" class="num">Opérateurs nécessaires{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre" class="num">Machines{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre" class="num">Lots{% include "usine/partiels/tri.html" %}</th>
+          <th class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in lignes %}
+          <tr>
+            <td data-valeur="{{ ligne.num_ligne }}"><a href="{% url 'lignes_detail' ligne.num_ligne %}">Ligne {{ ligne.num_ligne }}</a></td>
+            <td><a href="{% url 'ateliers_detail' ligne.atelier_id %}">{{ ligne.atelier.libelle }}</a></td>
+            <td class="num">{{ ligne.nb_operateurs_necessaires }}</td>
+            <td class="num">{{ ligne.nb_machines }}</td>
+            <td class="num">{{ ligne.nb_lots }}</td>
+            <td class="col-actions"><div class="actions">
+              <a href="{% url 'lignes_detail' ligne.num_ligne %}" class="icon-btn" title="Voir le détail">{% icone "eye" 16 %}</a>
+              {% if droit_modifier %}<a href="{% url 'lignes_modifier' ligne.num_ligne %}" class="icon-btn" data-modal title="Modifier">{% icone "pencil" 16 %}</a>{% endif %}
+              {% if droit_supprimer %}<a href="{% url 'lignes_supprimer' ligne.num_ligne %}" class="icon-btn danger" data-modal title="Supprimer">{% icone "trash-2" 16 %}</a>{% endif %}
+            </div></td>
+          </tr>
+        {% endfor %}
+        <tr class="ligne-vide"><td colspan="6" class="vide">Aucune ligne de production.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% include "usine/partiels/tableau_pied.html" %}
+</div>
+{% endblock %}

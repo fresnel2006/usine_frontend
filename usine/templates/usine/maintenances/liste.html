@@ -1,0 +1,51 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Maintenances{% endblock %}
+{% block contenu %}
+{% peut "maintenances" "creer" as droit_creer %}{% peut "maintenances" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <h1>Maintenances</h1>
+    <p class="sous-titre">Interventions sur les machines, avec les opérateurs et les pièces consommées.</p>
+  </div>
+  {% if droit_creer %}
+    <div class="page-actions"><a href="{% url 'maintenances_creer' %}" class="btn btn-primary" data-modal>{% icone "wrench" 16 %}Enregistrer une maintenance</a></div>
+  {% endif %}
+</div>
+{% if not droit_creer %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="tableau" data-tableau>
+  {% include "usine/partiels/tableau_barre.html" with placeholder="Rechercher une machine, un opérateur, une pièce..." %}
+  <div class="defilement">
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-tri="nombre">N°{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Début{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Machine{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre" class="num">Durée{% include "usine/partiels/tri.html" %}</th>
+          <th>Opérateurs</th>
+          <th>Pièces consommées</th>
+          <th class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mt in maintenances %}
+          <tr>
+            <td class="mono"><a href="{% url 'maintenances_detail' mt.num_maintenance %}">{{ mt.num_maintenance }}</a></td>
+            <td data-valeur="{{ mt.date_heure_debut|date:'Y-m-d H:i' }}">{{ mt.date_heure_debut|date_heure_fr }}</td>
+            <td><a href="{% url 'machines_detail' mt.machine_id %}">{{ mt.machine.designation }}</a></td>
+            <td class="num" data-valeur="{{ mt.duree }}">{{ mt.duree|duree }}</td>
+            <td>{% for e in mt.interventions.all %}{{ e.operateur.nom_complet }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+            <td>{% for c in mt.consommations.all %}<span class="badge">{{ c.quantite }} x {{ c.piece.libelle }}</span> {% empty %}<span class="muted">Aucune</span>{% endfor %}</td>
+            <td class="col-actions"><div class="actions">
+              <a href="{% url 'maintenances_detail' mt.num_maintenance %}" class="icon-btn" title="Voir le détail">{% icone "eye" 16 %}</a>
+              {% if droit_supprimer %}<a href="{% url 'maintenances_supprimer' mt.num_maintenance %}" class="icon-btn danger" data-modal title="Supprimer">{% icone "trash-2" 16 %}</a>{% endif %}
+            </div></td>
+          </tr>
+        {% endfor %}
+        <tr class="ligne-vide"><td colspan="7" class="vide">Aucune maintenance.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% include "usine/partiels/tableau_pied.html" %}
+</div>
+{% endblock %}

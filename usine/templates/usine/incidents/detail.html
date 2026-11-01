@@ -1,0 +1,30 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Incident {{ incident.num_incident }}{% endblock %}
+{% block contenu %}
+{% peut "incidents" "modifier" as droit_modifier %}{% peut "incidents" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'incidents' %}" class="retour">{% icone "arrow-left" 14 %}Incidents</a>
+    <h1>Incident {{ incident.num_incident }}</h1>
+    <p class="sous-titre">{{ incident.type_incident.libelle }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_modifier %}<a href="{% url 'incidents_modifier' incident.num_incident %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'incidents_supprimer' incident.num_incident %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<section class="panel">
+  <div class="panel-header"><h2>Informations</h2></div>
+  <div class="panel-body">
+    <dl class="details">
+      <dt>Numéro</dt><dd class="mono">{{ incident.num_incident }}</dd>
+      <dt>Type</dt><dd><span class="badge">{{ incident.type_incident_id }}</span> {{ incident.type_incident.libelle }}</dd>
+      <dt>Temps d'arrêt</dt><dd>{{ incident.temps_arret|duree }} ({{ incident.temps_arret }} minutes)</dd>
+      <dt>Lot concerné</dt><dd><a href="{% url 'lots_detail' incident.lot_id %}">Lot {{ incident.lot_id }}</a> - {{ incident.lot.produit.designation }}, produit le {{ incident.lot.date_production|date_fr }}</dd>
+      <dt>Ligne</dt><dd><a href="{% url 'lignes_detail' incident.lot.ligne_id %}">Ligne {{ incident.lot.ligne_id }}</a></dd>
+      <dt>Atelier</dt><dd><a href="{% url 'ateliers_detail' incident.lot.ligne.atelier_id %}">{{ incident.lot.ligne.atelier.libelle }}</a></dd>
+    </dl>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}{{ machine.designation }}{% endblock %}
+{% block contenu %}
+{% peut "machines" "modifier" as droit_modifier %}{% peut "machines" "supprimer" as droit_supprimer %}{% peut "maintenances" "creer" as droit_maintenance %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{% url 'machines' %}" class="retour">{% icone "arrow-left" 14 %}Machines</a>
+    <h1>{{ machine.designation }}</h1>
+    <p class="sous-titre">Machine n° {{ machine.num_machine }}</p>
+  </div>
+  <div class="page-actions">
+    {% if droit_maintenance %}<a href="{% url 'maintenances_creer' %}?machine={{ machine.num_machine }}" class="btn btn-secondary" data-modal>{% icone "wrench" 16 %}Enregistrer une maintenance</a>{% endif %}
+    {% if droit_modifier %}<a href="{% url 'machines_modifier' machine.num_machine %}" class="btn btn-secondary" data-modal>{% icone "pencil" 16 %}Modifier</a>{% endif %}
+    {% if droit_supprimer %}<a href="{% url 'machines_supprimer' machine.num_machine %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
+<div class="stack">
+  <section class="panel">
+    <div class="panel-header"><h2>Informations</h2></div>
+    <div class="panel-body">
+      <dl class="details">
+        <dt>Numéro</dt><dd class="mono">{{ machine.num_machine }}</dd>
+        <dt>Désignation</dt><dd>{{ machine.designation }}</dd>
+        <dt>Ligne</dt><dd><a href="{% url 'lignes_detail' machine.ligne_id %}">Ligne {{ machine.ligne_id }}</a></dd>
+        <dt>Atelier</dt><dd>{{ machine.ligne.atelier.libelle }}</dd>
+      </dl>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Historique des maintenances</h2><span class="badge">{{ maintenances|length }}</span></div>
+    <div class="defilement">
+      <table class="table">
+        <thead><tr><th>N°</th><th>Début</th><th class="num">Durée</th><th>Opérateurs</th></tr></thead>
+        <tbody>
+          {% for mt in maintenances %}
+            <tr>
+              <td><a href="{% url 'maintenances_detail' mt.num_maintenance %}">{{ mt.num_maintenance }}</a></td>
+              <td>{{ mt.date_heure_debut|date_heure_fr }}</td>
+              <td class="num">{{ mt.duree|duree }}</td>
+              <td>{% for e in mt.interventions.all %}{{ e.operateur.nom_complet }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="vide">Aucune maintenance sur cette machine.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

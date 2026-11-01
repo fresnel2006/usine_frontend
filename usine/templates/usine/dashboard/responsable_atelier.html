@@ -1,0 +1,43 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Tableau de bord{% endblock %}
+{% block contenu %}
+{% include "usine/dashboard/entete.html" %}
+<div class="raccourcis">
+  <a href="{% url 'lots_creer' %}" class="btn btn-primary" data-modal>{% icone "boxes" 16 %}Nouveau lot</a>
+  <a href="{% url 'lignes_creer' %}{% if atelier %}?atelier={{ atelier.num_atelier }}{% endif %}" class="btn btn-secondary" data-modal>{% icone "workflow" 16 %}Nouvelle ligne</a>
+</div>
+{% if atelier %}
+  <p class="muted" style="margin-bottom:12px">Vous êtes responsable de <a href="{% url 'ateliers_detail' atelier.num_atelier %}">{{ atelier.libelle }}</a>.</p>
+{% else %}
+  <div class="alert alert-info" style="margin-bottom:16px">{% icone "info" 16 %}<div>Vous n'êtes responsable d'aucun atelier : les chiffres portent sur toute l'usine.</div></div>
+{% endif %}
+<div class="indicateurs">
+  <div class="indicateur"><div class="indicateur-entete">Lots des 7 derniers jours {% icone "boxes" 16 %}</div><div class="valeur">{{ lots_semaine }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Lignes de production {% icone "workflow" 16 %}</div><div class="valeur">{{ nb_lignes }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Temps d'arrêt de l'atelier {% icone "timer" 16 %}</div><div class="valeur">{{ arret_atelier|duree }}</div></div>
+  <div class="indicateur"><div class="indicateur-entete">Période {% icone "calendar" 16 %}</div><div class="valeur" style="font-size:16px">7 derniers jours</div></div>
+</div>
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-header"><h2>Lots produits cette semaine par ligne</h2></div>
+    <div class="panel-body">{% include "usine/partiels/barres.html" with graphique=graphique_lots %}</div>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Production par produit (nombre de lots)</h2></div>
+    <div class="panel-body">{% include "usine/partiels/barres.html" with graphique=graphique_production %}</div>
+  </section>
+  <section class="panel">
+    <div class="panel-header"><h2>Derniers lots</h2><a href="{% url 'lots' %}" class="small">Tous les lots</a></div>
+    <table class="table">
+      <thead><tr><th>Lot</th><th>Date</th><th>Ligne</th><th>Produit</th></tr></thead>
+      <tbody>
+        {% for lot in derniers_lots %}
+          <tr><td><a href="{% url 'lots_detail' lot.num_lot %}">{{ lot.num_lot }}</a></td><td>{{ lot.date_production|date_fr }}</td><td>Ligne {{ lot.ligne_id }}</td><td>{{ lot.produit.designation }}</td></tr>
+        {% empty %}
+          <tr><td colspan="4" class="vide">Aucun lot.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Incidents{% endblock %}
+{% block contenu %}
+{% peut "incidents" "creer" as droit_creer %}{% peut "incidents" "modifier" as droit_modifier %}{% peut "incidents" "supprimer" as droit_supprimer %}
+<div class="page-entete">
+  <div class="page-textes">
+    <h1>Incidents</h1>
+    <p class="sous-titre">Chaque incident concerne un et un seul lot de production.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'types_incident' %}" class="btn btn-secondary">{% icone "tags" 16 %}Types d'incident</a>
+    {% if droit_creer %}<a href="{% url 'incidents_creer' %}" class="btn btn-primary" data-modal>{% icone "triangle-alert" 16 %}Déclarer un incident</a>{% endif %}
+  </div>
+</div>
+{% if not droit_modifier %}
+  <div class="alert alert-info lecture-seule" title="Lecture seule">
+    {% icone "lock" 16 %}<div>{% if droit_creer %}Vous pouvez déclarer un incident, mais pas modifier ni supprimer les incidents existants.{% else %}<strong>Lecture seule.</strong> Votre rôle permet de consulter cette page, mais pas de la modifier.{% endif %}</div>
+  </div>
+{% endif %}
+<div class="tableau" data-tableau>
+  {% include "usine/partiels/tableau_barre.html" with placeholder="Rechercher un lot, un type, un atelier..." %}
+  <div class="defilement">
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-tri="nombre">N°{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Type{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre">Lot{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Produit{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Atelier{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="nombre" class="num">Temps d'arrêt{% include "usine/partiels/tri.html" %}</th>
+          <th class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for incident in incidents %}
+          <tr>
+            <td class="mono"><a href="{% url 'incidents_detail' incident.num_incident %}">{{ incident.num_incident }}</a></td>
+            <td><span class="badge">{{ incident.type_incident_id }}</span> {{ incident.type_incident.libelle }}</td>
+            <td data-valeur="{{ incident.lot_id }}"><a href="{% url 'lots_detail' incident.lot_id %}">{{ incident.lot_id }}</a></td>
+            <td>{{ incident.lot.produit.designation }}</td>
+            <td>{{ incident.lot.ligne.atelier.libelle }}</td>
+            <td class="num" data-valeur="{{ incident.temps_arret }}">{{ incident.temps_arret|duree }}</td>
+            <td class="col-actions"><div class="actions">
+              <a href="{% url 'incidents_detail' incident.num_incident %}" class="icon-btn" title="Voir le détail">{% icone "eye" 16 %}</a>
+              {% if droit_modifier %}<a href="{% url 'incidents_modifier' incident.num_incident %}" class="icon-btn" data-modal title="Modifier">{% icone "pencil" 16 %}</a>{% endif %}
+              {% if droit_supprimer %}<a href="{% url 'incidents_supprimer' incident.num_incident %}" class="icon-btn danger" data-modal title="Supprimer">{% icone "trash-2" 16 %}</a>{% endif %}
+            </div></td>
+          </tr>
+        {% endfor %}
+        <tr class="ligne-vide"><td colspan="7" class="vide">Aucun incident.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% include "usine/partiels/tableau_pied.html" %}
+</div>
+
+<h2 style="margin:24px 0 12px">Temps d'arrêt cumulés</h2>
+<div class="stack">
+  <section class="panel">
+    <div class="panel-header"><h3>Par atelier</h3></div>
+    <div class="panel-body barres">
+      {% for a in par_atelier %}
+        <div class="barre-ligne">
+          <span class="barre-libelle">{{ a.libelle }}</span>
+          <span class="barre-piste"><span class="barre-valeur" style="width: {{ a.total|pourcentage:max_atelier }}%"></span></span>
+          <span class="barre-chiffre">{{ a.total|duree }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-header"><h3>Par ligne</h3></div>
+      <table class="table">
+        <thead><tr><th>Ligne</th><th>Atelier</th><th class="num">Incidents</th><th class="num">Total</th></tr></thead>
+        <tbody>
+          {% for l in par_ligne %}
+            <tr>
+              <td><a href="{% url 'lignes_detail' l.lot__ligne__num_ligne %}">Ligne {{ l.lot__ligne__num_ligne }}</a></td>
+              <td>{{ l.lot__ligne__atelier__libelle }}</td>
+              <td class="num">{{ l.nombre }}</td>
+              <td class="num">{{ l.total|duree }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="vide">Aucun incident.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><h3>Par lot</h3></div>
+      <table class="table">
+        <thead><tr><th>Lot</th><th>Produit</th><th class="num">Incidents</th><th class="num">Total</th></tr></thead>
+        <tbody>
+          {% for l in par_lot %}
+            <tr>
+              <td><a href="{% url 'lots_detail' l.lot__num_lot %}">{{ l.lot__num_lot }}</a></td>
+              <td>{{ l.lot__produit__designation }}</td>
+              <td class="num">{{ l.nombre }}</td>
+              <td class="num">{{ l.total|duree }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" class="vide">Aucun incident.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>
+{% endblock %}

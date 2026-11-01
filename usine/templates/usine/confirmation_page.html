@@ -1,0 +1,25 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}{{ titre }}{% endblock %}
+{% block contenu %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{{ retour }}" class="retour">{% icone "arrow-left" 14 %}Retour</a>
+    <h1>{{ titre }}</h1>
+  </div>
+</div>
+<form method="post" action="{{ action }}" class="panel formulaire-page">
+  {% csrf_token %}
+  <div class="fenetre-corps">
+    <div class="alert {% if bouton %}alert-danger{% else %}alert-info{% endif %}">
+      {% if bouton %}{% icone "triangle-alert" 16 %}{% else %}{% icone "info" 16 %}{% endif %}
+      <div>{{ message }}</div>
+    </div>
+  </div>
+  <div class="fenetre-pied">
+    <a href="{{ retour }}" class="btn btn-secondary">{% if bouton %}Annuler{% else %}Retour{% endif %}</a>
+    {% if bouton %}
+      <button type="submit" class="btn {% if danger %}btn-danger{% else %}btn-primary{% endif %}">{{ bouton }}</button>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

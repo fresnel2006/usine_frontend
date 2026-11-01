@@ -1,0 +1,18 @@
+{% if champ.is_hidden %}{{ champ }}{% else %}
+<div class="field{% if pleine_largeur or champ.field.widget.input_type == 'checkbox' %} full{% endif %}">
+  <label for="{{ champ.id_for_label }}">{{ champ.label }}{% if champ.field.required %}<span class="required" aria-hidden="true">*</span>{% endif %}</label>
+  {% if champ.field.widget.allow_multiple_selected and champ.field.widget.input_type == "checkbox" %}
+    <div class="checklist{% if champ.errors %} invalid{% endif %}" id="{{ champ.id_for_label }}">
+      {% for case in champ %}
+        <label>{{ case.tag }} {{ case.choice_label }}</label>
+      {% empty %}
+        <label class="muted">Aucun élément disponible.</label>
+      {% endfor %}
+    </div>
+  {% else %}
+    {{ champ }}
+  {% endif %}
+  {% if champ.help_text %}<span class="field-hint">{{ champ.help_text }}</span>{% endif %}
+  {% for erreur in champ.errors %}<span class="field-error">{{ erreur }}</span>{% endfor %}
+</div>
+{% endif %}

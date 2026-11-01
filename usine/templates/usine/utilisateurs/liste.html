@@ -1,0 +1,56 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}Utilisateurs{% endblock %}
+{% block contenu %}
+<div class="page-entete">
+  <div class="page-textes">
+    <h1>Utilisateurs</h1>
+    <p class="sous-titre">Comptes d'accès à l'application, rôles et activation.</p>
+  </div>
+  <div class="page-actions"><a href="{% url 'utilisateurs_creer' %}" class="btn btn-primary" data-modal>{% icone "user-plus" 16 %}Nouveau compte</a></div>
+</div>
+<div class="tableau" data-tableau>
+  {% include "usine/partiels/tableau_barre.html" with placeholder="Rechercher un identifiant, un nom, un rôle..." %}
+  <div class="defilement">
+    <table class="table">
+      <thead>
+        <tr>
+          <th data-tri="texte">Identifiant{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Nom{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Rôle{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">Matricule{% include "usine/partiels/tri.html" %}</th>
+          <th data-tri="texte">État{% include "usine/partiels/tri.html" %}</th>
+          <th class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in comptes %}
+          <tr>
+            <td class="mono">{{ c.login }}{% if c.login == utilisateur.login %} <span class="badge">Vous</span>{% endif %}</td>
+            <td>{{ c.nom_affiche }}</td>
+            <td data-valeur="{{ c.role|libelle_role }}">{% badge_role c.role %}</td>
+            <td class="mono">{% if c.operateur_id %}<a href="{% url 'operateurs_detail' c.operateur_id %}">{{ c.operateur_id }}</a>{% else %}-{% endif %}</td>
+            <td>{% if c.actif %}<span class="badge badge-success">Actif</span>{% else %}<span class="badge badge-danger">Désactivé</span>{% endif %}</td>
+            <td class="col-actions"><div class="actions">
+              <a href="{% url 'utilisateurs_modifier' c.login %}" class="icon-btn" data-modal title="Modifier le rôle ou la fiche liée">{% icone "pencil" 16 %}</a>
+              <a href="{% url 'utilisateurs_mot_de_passe' c.login %}" class="icon-btn" data-modal title="Réinitialiser le mot de passe">{% icone "key-round" 16 %}</a>
+              {% if c.login != utilisateur.login %}
+                <form method="post" action="{% url 'utilisateurs_activation' c.login %}">
+                  {% csrf_token %}
+                  {% if c.actif %}
+                    <button type="submit" class="icon-btn" title="Désactiver le compte">{% icone "user-x" 16 %}</button>
+                  {% else %}
+                    <button type="submit" class="icon-btn" title="Réactiver le compte">{% icone "user-check" 16 %}</button>
+                  {% endif %}
+                </form>
+                <a href="{% url 'utilisateurs_supprimer' c.login %}" class="icon-btn danger" data-modal title="Supprimer">{% icone "trash-2" 16 %}</a>
+              {% endif %}
+            </div></td>
+          </tr>
+        {% endfor %}
+        <tr class="ligne-vide"><td colspan="6" class="vide">Aucun compte.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% include "usine/partiels/tableau_pied.html" %}
+</div>
+{% endblock %}

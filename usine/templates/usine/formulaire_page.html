@@ -1,0 +1,20 @@
+{% extends "usine/layout.html" %}
+{% block titre_onglet %}{{ titre }}{% endblock %}
+{% block contenu %}
+<div class="page-entete">
+  <div class="page-textes">
+    <a href="{{ retour }}" class="retour">{% icone "arrow-left" 14 %}Retour</a>
+    <h1>{{ titre }}</h1>
+  </div>
+</div>
+<form method="post" action="{{ action }}" class="panel formulaire-page" novalidate>
+  {% csrf_token %}
+  <div class="fenetre-corps">
+    {% include "usine/partiels/formulaire_corps.html" with large=False %}
+  </div>
+  <div class="fenetre-pied">
+    <a href="{{ retour }}" class="btn btn-secondary">Annuler</a>
+    <button type="submit" class="btn btn-primary">{% icone "check" 16 %}{{ bouton }}</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,11 @@
+<div class="barres">
+  {% for l in graphique.lignes %}
+    <div class="barre-ligne">
+      <span class="barre-libelle" title="{{ l.libelle }}">{{ l.libelle }}</span>
+      <span class="barre-piste"><span class="barre-valeur" style="width: {{ l.valeur|pourcentage:graphique.max }}%"></span></span>
+      <span class="barre-chiffre">{% if unite == "duree" %}{{ l.valeur|duree }}{% else %}{{ l.valeur|nombre }}{% endif %}</span>
+    </div>
+  {% empty %}
+    <p class="muted">Aucune donnée.</p>
+  {% endfor %}
+</div>

@@ -1,0 +1,16 @@
+{% if intro %}<p class="muted">{{ intro }}</p>{% endif %}
+{% if form.non_field_errors %}
+  <div class="alert alert-danger" role="alert">
+    {% icone "circle-alert" 16 %}
+    <div>{% for erreur in form.non_field_errors %}<div>{{ erreur }}</div>{% endfor %}</div>
+  </div>
+{% elif form.errors %}
+  <div class="alert alert-danger" role="alert">
+    {% icone "circle-alert" 16 %}<div>Le formulaire contient des erreurs : corrigez les champs signalés.</div>
+  </div>
+{% endif %}
+<div class="form-grid">
+  {% for champ in form %}
+    {% include "usine/partiels/champ.html" with champ=champ pleine_largeur=large %}
+  {% endfor %}
+</div>
