@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from usine import models as m
-from usine.forms import AtelierForm
+from usine.forms import AtelierForm, compte_avec_role, message_compte_lie
 from usine.permissions import droit_requis
 from usine.views.outils import supprimer, traiter_formulaire
 
@@ -63,16 +63,18 @@ def modifier(request, num):
 def supprimer_atelier(request, num):
     atelier = get_object_or_404(m.Atelier, pk=num)
     nb_lignes = atelier.lignes.count()
+    compte = compte_avec_role(atelier.responsable, m.RESP_ATELIER)
+    blocage = None
+    if nb_lignes:
+        blocage = f"Suppression impossible : l'atelier contient encore {nb_lignes} ligne(s) de production."
+    elif compte is not None:
+        blocage = "Suppression impossible : " + message_compte_lie(compte, "cet atelier")
     return supprimer(
         request,
         atelier,
         titre="Supprimer l'atelier",
         message=f"Supprimer définitivement l'atelier {atelier.num_atelier} - {atelier.libelle} ?",
-        blocage=(
-            f"Suppression impossible : l'atelier contient encore {nb_lignes} ligne(s) de production."
-            if nb_lignes
-            else None
-        ),
+        blocage=blocage,
         retour_annuler=reverse("ateliers_detail", args=[num]),
         retour_succes=reverse("ateliers"),
         message_succes="Atelier supprimé.",

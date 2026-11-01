@@ -3,6 +3,8 @@
 Chaque erreur s'affiche sous le champ concerné ; les erreurs générales (non_field_errors)
 s'affichent en haut du formulaire.
 """
+from datetime import date, datetime
+
 from django import forms
 
 from usine import models as m
@@ -63,6 +65,29 @@ def choix_objet(libelle, queryset, requis=True, vide="Choisir..."):
         required=requis,
         empty_label=vide,
         error_messages={**REQUIS, "invalid_choice": "Sélectionnez une valeur de la liste."},
+    )
+
+
+def refuser_date_future(valeur, message):
+    """Un lot produit, un achat ou une maintenance enregistrés ne peuvent pas être dans le futur."""
+    jour = valeur.date() if isinstance(valeur, datetime) else valeur
+    if jour is not None and jour > date.today():
+        raise forms.ValidationError(message)
+    return valeur
+
+
+def compte_avec_role(operateur, role):
+    """Compte actif lié à l'opérateur avec ce rôle, ou None."""
+    if operateur is None:
+        return None
+    return m.Utilisateur.objects.filter(operateur=operateur, role=role, actif=True).first()
+
+
+def message_compte_lie(compte, responsabilite):
+    return (
+        f"{compte.operateur.nom_complet} a le compte « {compte.login} » avec le rôle "
+        f"{compte.get_role_display()}, qui suppose qu'il dirige {responsabilite}. "
+        "L'administrateur doit d'abord changer le rôle de ce compte."
     )
 
 
@@ -174,6 +199,14 @@ class AtelierForm(FormulaireBase):
             raise forms.ValidationError(f"Un atelier porte déjà le numéro {num}.")
         return num
 
+    def clean_responsable(self):
+        nouveau = self.cleaned_data["responsable"]
+        if self.instance is not None and nouveau.pk != self.instance.responsable_id:
+            compte = compte_avec_role(self.instance.responsable, m.RESP_ATELIER)
+            if compte is not None:
+                raise forms.ValidationError(message_compte_lie(compte, "cet atelier"))
+        return nouveau
+
     def enregistrer(self):
         d = self.cleaned_data
         atelier = self.instance or m.Atelier(num_atelier=d["num_atelier"])
@@ -279,6 +312,11 @@ class LotForm(FormulaireBase):
             raise forms.ValidationError(f"Un lot porte déjà le numéro {num}.")
         return num
 
+    def clean_date_production(self):
+        return refuser_date_future(
+            self.cleaned_data["date_production"], "La date de production ne peut pas être dans le futur."
+        )
+
     def enregistrer(self):
         d = self.cleaned_data
         lot = self.instance or m.LotProduction(num_lot=d["num_lot"])
@@ -315,6 +353,11 @@ class OperateurForm(FormulaireBase):
 
     def clean_nom(self):
         return self.cleaned_data["nom"].strip().upper()
+
+    def clean_date_entree(self):
+        return refuser_date_future(
+            self.cleaned_data["date_entree"], "La date d'entrée ne peut pas être dans le futur."
+        )
 
     def clean(self):
         donnees = super().clean()
@@ -370,6 +413,15 @@ class EquipeForm(FormulaireBase):
         if self.instance is None and m.Equipe.objects.filter(pk=num).exists():
             raise forms.ValidationError(f"Une équipe porte déjà le numéro {num}.")
         return num
+
+    def clean_responsable(self):
+        nouveau = self.cleaned_data.get("responsable")
+        if self.instance is not None and self.instance.responsable_id:
+            if nouveau is None or nouveau.pk != self.instance.responsable_id:
+                compte = compte_avec_role(self.instance.responsable, m.COLLAB_RESP)
+                if compte is not None:
+                    raise forms.ValidationError(message_compte_lie(compte, "cette équipe"))
+        return nouveau
 
     def enregistrer(self):
         d = self.cleaned_data
@@ -480,8 +532,9 @@ class MaintenanceForm(FormulaireBase):
         error_messages={"required": "Sélectionnez au moins un opérateur.", "invalid_choice": "Opérateur inconnu."},
     )
 
-    def __init__(self, *args, instance=None, **kwargs):
+    def __init__(self, *args, instance=None, utilisateur=None, **kwargs):
         self.instance = instance
+        self.utilisateur = utilisateur
         if instance is not None:
             kwargs.setdefault("initial", {}).update(
                 {
@@ -493,6 +546,25 @@ class MaintenanceForm(FormulaireBase):
             )
         super().__init__(*args, **kwargs)
         self.fields["duree"].error_messages["min_value"] = "La durée doit être supérieure à 0."
+
+    def clean_date_heure_debut(self):
+        debut = self.cleaned_data["date_heure_debut"]
+        if debut > datetime.now():
+            raise forms.ValidationError("La maintenance enregistrée ne peut pas commencer dans le futur.")
+        return debut
+
+    def clean_operateurs(self):
+        """Énoncé : la maintenance est notée par les opérateurs qui l'ont effectuée.
+
+        Un opérateur n'enregistre donc que ses propres interventions et ne peut pas s'en retirer.
+        """
+        operateurs = self.cleaned_data["operateurs"]
+        u = self.utilisateur
+        if u is not None and u.role == m.OPERATEUR and u.operateur_id not in {o.pk for o in operateurs}:
+            raise forms.ValidationError(
+                "Vous devez figurer parmi les opérateurs : vous ne pouvez noter que vos propres interventions."
+            )
+        return operateurs
 
     def enregistrer(self):
         d = self.cleaned_data
@@ -615,6 +687,9 @@ class AchatForm(FormulaireBase):
     def clean_prix_achat(self):
         return verifier_non_negatif(self.cleaned_data["prix_achat"], "Le prix ne peut pas être négatif.")
 
+    def clean_date_achat(self):
+        return refuser_date_future(self.cleaned_data["date_achat"], "La date d'achat ne peut pas être dans le futur.")
+
     def clean(self):
         d = super().clean()
         if d.get("piece") and d.get("fournisseur") and d.get("date_achat"):
@@ -717,6 +792,20 @@ class UtilisateurForm(FormulaireBase):
                 autre = autre.exclude(pk=self.instance.pk)
             if autre.exists():
                 self.add_error("operateur", f"L'opérateur {operateur.matricule} a déjà un compte ({autre.first().login}).")
+        # Énoncé : un atelier a un seul responsable, une équipe un seul collaborateur responsable.
+        # Ces rôles ne se donnent qu'à l'opérateur qui exerce réellement cette responsabilité.
+        if role == m.RESP_ATELIER and operateur is not None and not m.Atelier.objects.filter(responsable=operateur).exists():
+            self.add_error(
+                "role",
+                f"{operateur.nom_complet} n'est responsable d'aucun atelier : désignez-le d'abord "
+                "responsable d'un atelier.",
+            )
+        if role == m.COLLAB_RESP and operateur is not None and not m.Equipe.objects.filter(responsable=operateur).exists():
+            self.add_error(
+                "role",
+                f"{operateur.nom_complet} ne dirige aucune équipe : désignez-le d'abord "
+                "collaborateur responsable d'une équipe.",
+            )
         if (
             self.instance is not None
             and self.instance.role == m.ADMIN

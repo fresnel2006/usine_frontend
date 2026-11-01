@@ -55,7 +55,7 @@ def creer(request):
         initial["machine"] = request.GET["machine"]
     if request.utilisateur.operateur_id:
         initial["operateurs"] = [request.utilisateur.operateur_id]
-    form = MaintenanceForm(request.POST or None, initial=initial)
+    form = MaintenanceForm(request.POST or None, initial=initial, utilisateur=request.utilisateur)
     return traiter_formulaire(
         request,
         form,
@@ -72,7 +72,7 @@ def modifier(request, num):
     maintenance = get_object_or_404(m.Maintenance, pk=num)
     if not peut_modifier_maintenance(request.utilisateur, maintenance):
         raise PermissionDenied(MESSAGE_403)
-    form = MaintenanceForm(request.POST or None, instance=maintenance)
+    form = MaintenanceForm(request.POST or None, instance=maintenance, utilisateur=request.utilisateur)
     return traiter_formulaire(
         request,
         form,

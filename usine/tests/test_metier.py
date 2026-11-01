@@ -187,9 +187,9 @@ class Maintenance(TestUsine):
         self.connecter(OPER)
         self.client.post(
             reverse("maintenances_creer"),
-            {"machine": 4, "date_heure_debut": "2026-11-01T09:00", "duree": 60, "operateurs": ["OP005"]},
+            {"machine": 4, "date_heure_debut": "2026-10-30T09:00", "duree": 60, "operateurs": ["OP005"]},
         )
-        maintenance = m.Maintenance.objects.filter(machine_id=4, duree=60, date_heure_debut__date="2026-11-01").get()
+        maintenance = m.Maintenance.objects.filter(machine_id=4, duree=60, date_heure_debut__date="2026-10-30").get()
         stock = m.Piece.objects.get(pk="PCE-JOIN").quantite_stock
         url = reverse("maintenances_ajouter_piece", args=[maintenance.pk])
         self.client.post(url, {"piece": "PCE-JOIN", "quantite": 2})
@@ -209,7 +209,7 @@ class Maintenance(TestUsine):
     def test_maintenance_sans_operateur_refusee(self):
         self.connecter(COLLAB)
         reponse = self.client.post(
-            reverse("maintenances_creer"), {"machine": 1, "date_heure_debut": "2026-11-01T09:00", "duree": 30}
+            reverse("maintenances_creer"), {"machine": 1, "date_heure_debut": "2026-10-30T09:00", "duree": 30}
         )
         self.assertContains(reponse, "Sélectionnez au moins un opérateur.", status_code=422)
 
@@ -278,3 +278,89 @@ class Comptes(TestUsine):
             reverse("profil"), {"ancien": "Operateur@2026", "nouveau": "Nouveau@2026", "confirmation": "Nouveau@2026"}
         )
         self.assertTrue(verifier_mot_de_passe("Nouveau@2026", m.Utilisateur.objects.get(pk=OPER).mot_de_passe))
+
+
+class LogiqueDeLEnonce(TestUsine):
+    """Règles tirées de l'énoncé : responsables uniques, interventions notées par leurs opérateurs."""
+
+    def test_operateur_note_seulement_ses_interventions(self):
+        self.connecter(OPER)
+        reponse = self.client.post(
+            reverse("maintenances_creer"),
+            {"machine": 2, "date_heure_debut": "2026-10-30T10:00", "duree": 30, "operateurs": ["OP006"]},
+        )
+        self.assertContains(reponse, "vous ne pouvez noter que vos propres interventions", status_code=422)
+        reponse = self.client.post(
+            reverse("maintenances_modifier", args=[1]),
+            {"machine": 1, "date_heure_debut": "2026-10-19T14:00", "duree": 60, "operateurs": ["OP006"]},
+        )
+        self.assertContains(reponse, "vous ne pouvez noter que vos propres interventions", status_code=422)
+
+    def test_collaborateur_enregistre_pour_d_autres(self):
+        self.connecter(COLLAB)
+        self.client.post(
+            reverse("maintenances_creer"),
+            {"machine": 2, "date_heure_debut": "2026-10-30T10:00", "duree": 30, "operateurs": ["OP006"]},
+        )
+        self.assertTrue(m.Maintenance.objects.filter(machine_id=2, duree=30).exists())
+
+    def test_dates_futures_refusees(self):
+        self.connecter(ADMIN)
+        reponse = self.client.post(
+            reverse("lots_creer"),
+            {"num_lot": 5008, "date_production": "2099-01-01", "ligne": 101, "produit": "PRD-ATT1K", "operateurs": ["OP001"]},
+        )
+        self.assertContains(reponse, "ne peut pas être dans le futur", status_code=422)
+        reponse = self.client.post(
+            reverse("pieces_achat_creer"),
+            {"piece": "PCE-ROUL", "fournisseur": "F001", "date_achat": "2099-01-01", "prix_achat": 1, "quantite": 1},
+        )
+        self.assertContains(reponse, "ne peut pas être dans le futur", status_code=422)
+        reponse = self.client.post(
+            reverse("maintenances_creer"),
+            {"machine": 1, "date_heure_debut": "2099-01-01T08:00", "duree": 10, "operateurs": ["OP005"]},
+        )
+        self.assertContains(reponse, "ne peut pas commencer dans le futur", status_code=422)
+
+    def test_role_responsable_atelier_exige_un_atelier(self):
+        self.connecter(ADMIN)
+        reponse = self.client.post(
+            reverse("utilisateurs_creer"),
+            {"login": "kyao", "role": "RESPONSABLE_ATELIER", "operateur": "OP007", "mot_de_passe": "Motdepasse1"},
+        )
+        self.assertContains(reponse, "responsable d&#x27;aucun atelier", status_code=422)
+        # OP001 dirige l'atelier embouteillage : le rôle lui convient.
+        self.client.post(
+            reverse("utilisateurs_creer"),
+            {"login": "ykouassi", "role": "RESPONSABLE_ATELIER", "operateur": "OP001", "mot_de_passe": "Motdepasse1"},
+        )
+        self.assertTrue(m.Utilisateur.objects.filter(pk="ykouassi").exists())
+
+    def test_role_collaborateur_exige_une_equipe(self):
+        self.connecter(ADMIN)
+        reponse = self.client.post(
+            reverse("utilisateurs_creer"),
+            {"login": "kyao", "role": "COLLABORATEUR_RESPONSABLE", "operateur": "OP007", "mot_de_passe": "Motdepasse1"},
+        )
+        self.assertContains(reponse, "ne dirige aucune équipe", status_code=422)
+
+    def test_retirer_la_responsabilite_d_un_compte_responsable_refuse(self):
+        # itoure (OP008) a le rôle Responsable atelier pour l'atelier 10.
+        self.connecter(RESP)
+        reponse = self.client.post(
+            reverse("ateliers_modifier", args=[10]), {"libelle": "Atelier transformation", "responsable": "OP007"}
+        )
+        self.assertContains(reponse, "doit d&#x27;abord changer le rôle de ce compte", status_code=422)
+        self.assertEqual(m.Atelier.objects.get(pk=10).responsable_id, "OP008")
+        # mbamba (OP002) a le rôle Collaborateur responsable pour l'équipe 1.
+        self.connecter(COLLAB)
+        reponse = self.client.post(
+            reverse("equipes_modifier", args=[1]), {"libelle": "Équipe du matin", "responsable": "OP001"}
+        )
+        self.assertContains(reponse, "doit d&#x27;abord changer le rôle de ce compte", status_code=422)
+
+    def test_changer_responsable_sans_compte_autorise(self):
+        # L'équipe 2 est dirigée par OP004, qui n'a pas de compte : le changement est libre.
+        self.connecter(COLLAB)
+        self.client.post(reverse("equipes_modifier", args=[2]), {"libelle": "Équipe de l'après-midi", "responsable": "OP003"})
+        self.assertEqual(m.Equipe.objects.get(pk=2).responsable_id, "OP003")
