@@ -13,7 +13,6 @@
     {% if droit_supprimer %}<a href="{% url 'produits_supprimer' produit.reference %}" class="btn btn-danger" data-modal>{% icone "trash-2" 16 %}Supprimer</a>{% endif %}
   </div>
 </div>
-{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
 <div class="stack">
   <section class="panel">
     <div class="panel-header"><h2>Informations</h2></div>

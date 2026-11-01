@@ -796,10 +796,6 @@ textarea {
   gap: 8px;
 }
 
-.lecture-seule {
-  margin-bottom: 16px;
-}
-
 /* ------------------------------------------------------------------ */
 /* Tableaux de données (recherche, tri, pagination : app.js)           */
 /* ------------------------------------------------------------------ */

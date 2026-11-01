@@ -33,6 +33,9 @@ FastAPI, JWT et Vite dans les prompts sont remplacées par leurs équivalents Dj
 - Montants : filtre `|fcfa` (1 500 FCFA). Dates : `|date_fr` (JJ/MM/AAAA), `|date_heure_fr`, durées `|duree`.
 - Formulaires : classes de `usine/forms.py`, message sous chaque champ (`partiels/champ.html`), erreur globale en haut.
 - Utilisable sur tablette : barre latérale repliable sous 1024 px.
+- L'interface n'explique jamais son propre fonctionnement : pas de bandeau « Lecture seule », pas de phrase
+  d'explication sous les titres, pas d'aide sous les champs ni de texte d'introduction dans les formulaires.
+  Un droit manquant se traduit seulement par l'absence du bouton. Restent : données, messages d'erreur et confirmations.
 
 ## Conventions
 - Code et noms en français.

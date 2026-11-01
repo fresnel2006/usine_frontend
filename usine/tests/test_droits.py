@@ -107,11 +107,12 @@ class MatriceDesDroits(TestUsine):
         self.connecter(OPER)
         page = self.client.get(reverse("ateliers"))
         self.assertNotContains(page, reverse("ateliers_creer"))
-        self.assertContains(page, "Lecture seule")
+        self.assertNotContains(page, reverse("ateliers_modifier", args=[10]))
+        self.assertNotContains(page, "Lecture seule")
         self.connecter(RESP)
         page = self.client.get(reverse("ateliers"))
         self.assertContains(page, reverse("ateliers_creer"))
-        self.assertNotContains(page, "Lecture seule")
+        self.assertContains(page, reverse("ateliers_modifier", args=[10]))
 
     def test_pages_protegees_sans_connexion(self):
         reponse = self.client.get(reverse("ateliers"))

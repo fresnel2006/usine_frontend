@@ -26,7 +26,6 @@ def creer(request):
         annuler=reverse("utilisateurs"),
         suite=reverse("utilisateurs"),
         message="Compte créé.",
-        intro="Tout compte, sauf celui d'un administrateur, est lié à une fiche opérateur.",
     )
 
 
@@ -73,7 +72,6 @@ def reinitialiser(request, login):
         form,
         f"Réinitialiser le mot de passe de {compte.login}",
         retour,
-        intro="Communiquez le nouveau mot de passe à la personne concernée.",
     )
 
 

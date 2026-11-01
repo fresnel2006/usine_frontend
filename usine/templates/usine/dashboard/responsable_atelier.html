@@ -8,8 +8,6 @@
 </div>
 {% if atelier %}
   <p class="muted" style="margin-bottom:12px">Vous êtes responsable de <a href="{% url 'ateliers_detail' atelier.num_atelier %}">{{ atelier.libelle }}</a>.</p>
-{% else %}
-  <div class="alert alert-info" style="margin-bottom:16px">{% icone "info" 16 %}<div>Vous n'êtes responsable d'aucun atelier : les chiffres portent sur toute l'usine.</div></div>
 {% endif %}
 <div class="indicateurs">
   <div class="indicateur"><div class="indicateur-entete">Lots des 7 derniers jours {% icone "boxes" 16 %}</div><div class="valeur">{{ lots_semaine }}</div></div>

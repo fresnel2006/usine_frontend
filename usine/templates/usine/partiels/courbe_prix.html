@@ -1,7 +1,7 @@
 <section class="panel">
   <div class="panel-header">
     <h2>Évolution du prix d'achat</h2>
-    <span class="muted small">Prix unitaire en FCFA, tous fournisseurs</span>
+    <span class="muted small">Prix unitaire en FCFA</span>
   </div>
   <div class="panel-body">
     {% if courbe %}
@@ -31,10 +31,9 @@
             <text x="{{ courbe.etiquette_x }}" y="{{ courbe.etiquette_y }}" class="courbe-etiquette" text-anchor="{% if courbe.plusieurs_dates %}end{% else %}middle{% endif %}">{{ dernier.prix|fcfa }}</text>
           {% endwith %}
         </svg>
-        <figcaption class="small muted">Survolez un point pour voir la date, le fournisseur et le prix. Le détail figure dans le tableau des achats ci-dessous.</figcaption>
       </figure>
     {% else %}
-      <p class="muted">Aucun achat enregistré : la courbe s'affichera après le premier achat.</p>
+      <p class="muted">Aucun achat enregistré.</p>
     {% endif %}
   </div>
 </section>

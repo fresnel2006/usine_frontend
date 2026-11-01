@@ -179,7 +179,6 @@ class AtelierForm(FormulaireBase):
         queryset=m.Operateur.objects.none(),
         empty_label="Choisir un opérateur...",
         error_messages=CHOIX,
-        help_text="Un opérateur ne peut être responsable que d'un seul atelier.",
     )
 
     def __init__(self, *args, instance=None, **kwargs):
@@ -392,7 +391,6 @@ class EquipeForm(FormulaireBase):
         required=False,
         empty_label="Aucun pour le moment",
         error_messages=CHOIX,
-        help_text="Choisi parmi les membres de l'équipe ; il ne dirige aucune autre équipe.",
     )
 
     def __init__(self, *args, instance=None, **kwargs):

@@ -147,7 +147,6 @@ def ajouter_piece(request, num):
         f"Noter une pièce consommée - maintenance {num}",
         retour,
         bouton="Ajouter",
-        intro="Le stock de la pièce diminue de la quantité consommée.",
     )
 
 

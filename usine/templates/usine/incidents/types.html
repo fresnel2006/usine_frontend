@@ -6,13 +6,11 @@
   <div class="page-textes">
     <a href="{% url 'incidents' %}" class="retour">{% icone "arrow-left" 14 %}Incidents</a>
     <h1>Types d'incident</h1>
-    <p class="sous-titre">Catégories utilisées pour déclarer les incidents.</p>
   </div>
   {% if droit_creer %}
     <div class="page-actions"><a href="{% url 'types_incident_creer' %}" class="btn btn-primary" data-modal>{% icone "plus" 16 %}Nouveau type</a></div>
   {% endif %}
 </div>
-{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
 <div class="tableau" data-tableau>
   {% include "usine/partiels/tableau_barre.html" with placeholder="Rechercher un type..." %}
   <div class="defilement">

@@ -171,7 +171,7 @@ def modifier_composant(request, ref, composant):
         )
         return succes(request, retour, "Quantité du composant modifiée.")
     return afficher_formulaire(
-        request, form, f"{lien.composant.libelle} dans {ref}", retour, intro="Nombre d'exemplaires dans la pièce composée."
+        request, form, f"{lien.composant.libelle} dans {ref}", retour
     )
 
 
@@ -228,7 +228,6 @@ def creer_achat(request):
         form,
         "Enregistrer un achat de pièce",
         annuler,
-        intro="La quantité achetée est ajoutée au stock de la pièce.",
     )
 
 
@@ -280,7 +279,7 @@ def modifier_achat(request, ref, code, jour):
         form,
         f"Achat du {achat.date_achat:%d/%m/%Y} - {achat.fournisseur.raison_sociale}",
         retour,
-        intro=f"{achat.piece.reference} - {achat.piece.libelle}. Le stock est ajusté de l'écart de quantité.",
+        intro=f"{achat.piece.reference} - {achat.piece.libelle}",
     )
 
 

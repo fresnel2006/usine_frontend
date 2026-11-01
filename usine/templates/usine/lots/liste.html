@@ -5,13 +5,11 @@
 <div class="page-entete">
   <div class="page-textes">
     <h1>Lots de production</h1>
-    <p class="sous-titre">Un lot est fabriqué sur une ligne, à une date, par un ou plusieurs opérateurs.</p>
   </div>
   {% if droit_creer %}
     <div class="page-actions"><a href="{% url 'lots_creer' %}" class="btn btn-primary" data-modal>{% icone "plus" 16 %}Nouveau lot</a></div>
   {% endif %}
 </div>
-{% if not droit_modifier %}{% include "usine/partiels/lecture_seule.html" %}{% endif %}
 <div class="tableau" data-tableau>
   <div class="tableau-barre">
     <label class="recherche">
